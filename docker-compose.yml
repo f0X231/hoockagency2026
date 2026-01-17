@@ -1,0 +1,46 @@
+services:
+    postgres:
+        image: postgres:16
+        container_name: hoock_db
+        environment:
+            POSTGRES_USER: hoock
+            POSTGRES_PASSWORD: h00ckstrapi@pass
+            POSTGRES_DB: hoock
+        ports:
+            - "5432:5432"
+        volumes:
+            - hoock_db_data:/var/lib/postgresql/data
+        healthcheck:
+            test: [ "CMD-SHELL", "pg_isready -U hoock" ]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+
+    strapi:
+        build: ./strapi
+        container_name: hoock_strapi
+        env_file:
+            - ./strapi/app/.env.docker
+        environment:
+            # Override .env file settings
+            DATABASE_CLIENT: postgres
+            DATABASE_HOST: postgres
+            DATABASE_PORT: 5432
+            DATABASE_NAME: hoock
+            DATABASE_USERNAME: hoock
+            DATABASE_PASSWORD: h00ckstrapi@pass
+            DATABASE_SSL: "false"
+            NODE_ENV: development
+        ports:
+            - "1337:1337"
+        volumes:
+            - ./strapi/app:/srv/app
+            - strapi_node_modules:/srv/app/node_modules
+        depends_on:
+            postgres:
+                condition: service_healthy
+        restart: unless-stopped
+
+volumes:
+    hoock_db_data:
+    strapi_node_modules:

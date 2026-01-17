@@ -1,0 +1,112 @@
+# =============================
+# OS
+# =============================
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+.Spotlight-V100
+.Trashes
+._*
+*~
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# =============================
+# Environment variables
+# =============================
+.env
+.env.*
+!.env.example
+!.env.docker
+
+# =============================
+# Node / npm / pnpm / yarn
+# =============================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+.yarn/*
+!.yarn/cache
+!.yarn/unplugged
+!.yarn/patches
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+.node_history
+
+# =============================
+# IDE / Editors
+# =============================
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*.swn
+*.swm
+nbproject/
+
+# =============================
+# Next.js (hoock-web)
+# =============================
+hoock-web/.next/
+hoock-web/out/
+hoock-web/build/
+hoock-web/.vercel/
+hoock-web/.turbo/
+
+# =============================
+# Strapi
+# =============================
+strapi/app/build/
+strapi/app/dist/
+strapi/app/.cache/
+strapi/app/.tmp/
+strapi/app/.strapi/
+strapi/app/.strapi-updater.json
+strapi/app/.strapi-cloud.json
+strapi/app/exports/
+strapi/app/public/uploads/*
+!strapi/app/public/uploads/.gitkeep
+
+# =============================
+# Docker
+# =============================
+*.log
+
+# =============================
+# Build artifacts
+# =============================
+*.tsbuildinfo
+.eslintcache
+coverage/
+
+# =============================
+# Misc
+# =============================
+*.7z
+*.zip
+*.tar
+*.gz
+*.rar
+*.iso
+*.dmg
+*.jar
+*.exe
+*.dll
+*.so
+*.o
+*.out
+*.pid
+*.sql
+*.sqlite
+*.sqlite3
+ssl/
