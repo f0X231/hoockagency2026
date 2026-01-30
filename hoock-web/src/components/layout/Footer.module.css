@@ -1,0 +1,156 @@
+.footer {
+  background-color: #2D3643;
+  padding: 3rem 4rem 2rem;
+  position: relative;
+}
+
+.footer::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #4ECDC4, #45B7D1);
+}
+
+.footerContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Left Side - Logo & Company Info */
+.brandSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.logo {
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.logoAccent {
+  color: #7CB4B8;
+}
+
+.agencyText {
+  font-size: 0.625rem;
+  letter-spacing: 0.5em;
+  color: #7CB4B8;
+  text-transform: uppercase;
+  margin-top: -0.5rem;
+  padding-left: 0.25rem;
+  position: relative;
+}
+
+.agencyText::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 2rem;
+  height: 1px;
+  background-color: #7CB4B8;
+  transform: translateY(-50%);
+  margin-left: -2.5rem;
+}
+
+.companyInfo {
+  margin-top: 1.5rem;
+}
+
+.companyName {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #7CB4B8;
+  margin: 0 0 0.5rem;
+}
+
+.address {
+  font-size: 0.75rem;
+  color: #8BA3A5;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Right Side - Nav & Social */
+.navSection {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1.25rem;
+}
+
+.navLinks {
+  display: flex;
+  gap: 2rem;
+}
+
+.navLink {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: #8BA3A5;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color 0.2s ease;
+}
+
+.navLink:hover {
+  color: #ffffff;
+}
+
+.socialLinks {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.socialIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid #5A7A7D;
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7CB4B8;
+  font-size: 0.75rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.socialIcon:hover {
+  background-color: #7CB4B8;
+  color: #2D3643;
+  border-color: #7CB4B8;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .footer {
+    padding: 2rem 1.5rem 1.5rem;
+  }
+  
+  .footerContent {
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .navSection {
+    align-items: flex-start;
+  }
+  
+  .navLinks {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+}
