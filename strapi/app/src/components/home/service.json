@@ -1,16 +1,14 @@
 {
-  "kind": "collectionType",
-  "collectionName": "services",
+  "collectionName": "components_home_services",
   "info": {
-    "singularName": "service",
-    "pluralName": "services",
-    "displayName": "Service"
+    "displayName": "service",
+    "icon": "server"
   },
-  "options": {
-    "draftAndPublish": true
-  },
-  "pluginOptions": {},
+  "options": {},
   "attributes": {
+    "no": {
+      "type": "integer"
+    },
     "title": {
       "type": "string"
     },
@@ -19,7 +17,7 @@
     },
     "image": {
       "type": "media",
-      "multiple": true,
+      "multiple": false,
       "allowedTypes": [
         "images",
         "files",
@@ -29,7 +27,7 @@
     },
     "imagefull": {
       "type": "media",
-      "multiple": true,
+      "multiple": false,
       "allowedTypes": [
         "images",
         "files",
@@ -37,5 +35,6 @@
         "audios"
       ]
     }
-  }
+  },
+  "config": {}
 }

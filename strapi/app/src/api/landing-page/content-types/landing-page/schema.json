@@ -10,5 +10,26 @@
     "draftAndPublish": true
   },
   "pluginOptions": {},
-  "attributes": {}
+  "attributes": {
+    "service": {
+      "type": "component",
+      "component": "home.service",
+      "repeatable": true
+    },
+    "work": {
+      "type": "component",
+      "component": "home.work",
+      "repeatable": true
+    },
+    "partner": {
+      "type": "component",
+      "component": "home.partner",
+      "repeatable": true
+    },
+    "article": {
+      "type": "component",
+      "component": "home.article",
+      "repeatable": true
+    }
+  }
 }
