@@ -1,13 +1,15 @@
 services:
     postgres:
         image: postgres:16
-        container_name: hoock_db
+        # ❌ ไม่ fix container_name ป้องกันชนข้าม project
+        # container_name: hoock_db
         environment:
             POSTGRES_USER: hoock
             POSTGRES_PASSWORD: h00ckstrapi@pass
             POSTGRES_DB: hoock
-        ports:
-            - "5432:5432"
+        # 🔐 ปิด port ถ้าไม่จำเป็น (Strapi คุยกันใน network)
+        # ports:
+        #   - "5432:5432"
         volumes:
             - hoock_db_data:/var/lib/postgresql/data
         healthcheck:
