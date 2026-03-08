@@ -19,9 +19,7 @@ const socialLinks = [
 
 export default function ContactPage() {
   return (
-    <div className={styles.container}>
-      <Header />
-      
+    <div className={styles.container}>      
       <div className={styles.content}>
         {/* Left Side - Contact Information */}
         <div className={styles.contactInfo}>

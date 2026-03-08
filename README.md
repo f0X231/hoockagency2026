@@ -18,3 +18,7 @@ Admin: http://localhost:1337/admin
 [OPTION]
 ; วีธีสร้าง Secrest
 node -e "console.log(require('crypto').randomBytes(16).toString('base64'))"
+
+docker compose exec hoock_strapi npx strapi transfer \
+ --to https://strong-art-a39006d263.strapiapp.com \
+ --to-token 8d9b3266af6bd549650d4c372c241a01cae8d0f6d2d5134f0e2f0657e7e9c05d

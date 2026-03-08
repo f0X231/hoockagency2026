@@ -1,48 +1,276 @@
+"use client";
+
 import Link from "next/link";
+import { useState, useRef } from "react";
+
+const NAV_LINKS = [
+  { label: "Services", href: "#services" },
+  { label: "Works", href: "#works" },
+  { label: "Article", href: "#article" },
+];
 
 export default function Navbar() {
+  const [coverVisible, setCoverVisible] = useState(false);
+  const [contactHovered, setContactHovered] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const hamburgerRef = useRef<HTMLDivElement>(null);
+
   return (
-    <nav className="flex items-center justify-between px-6 py-6 max-w-7xl mx-auto w-full">
-      {/* Left: Navigation Links */}
-      <div className="hidden md:flex space-x-8 text-xs font-medium tracking-widest text-gray-500 uppercase">
-        <Link href="#services" className="hover:text-black transition-colors">
-          Services
-        </Link>
-        <Link href="#works" className="hover:text-black transition-colors">
-          Works
-        </Link>
-        <Link href="#article" className="hover:text-black transition-colors">
-          Article
-        </Link>
+    <>
+      {/* ── Full-screen hover cover ── */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 10,
+          backgroundImage: "url('/hover-cover.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          opacity: coverVisible ? 1 : 0,
+          transition: "opacity 0.4s ease",
+          pointerEvents: "none",
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
+        {/* Description text — vertically centered, left-aligned with menu */}
+        <div
+          style={{
+            width: "100%",
+            maxWidth: "80rem",      /* max-w-7xl */
+            margin: "0 auto",
+            padding: "0 1.5rem",   /* px-6 */
+          }}
+        >
+          <p
+            style={{
+              maxWidth: "420px",
+              fontSize: "1.1rem",
+              fontWeight: 400,
+              lineHeight: 1.65,
+              color: "#1a1a1a",
+              opacity: coverVisible ? 1 : 0,
+              transform: coverVisible ? "translateY(0)" : "translateY(12px)",
+              transition: "opacity 0.45s ease 0.1s, transform 0.45s ease 0.1s",
+            }}
+          >
+            A creative agency and advertising consultancy covering both online
+            and offline channels, with the goal of inspiring brands and
+            delivering a great experience to customers.
+          </p>
+        </div>
       </div>
 
-      {/* Center: Logo */}
-      <div className="absolute left-1/2 transform -translate-x-1/2">
-        <Link href="/" className="text-2xl font-bold tracking-tighter uppercase">
-          HOOCK
-        </Link>
-      </div>
+      {/* ── Navbar ── */}
+      <nav
+        style={{ position: "relative", zIndex: 20 }}
+        className="flex items-center justify-between max-w-7xl mx-auto px-6 py-8 w-full"
+      >
+        {/* ── LEFT: Desktop nav links / Mobile hamburger ── */}
+        <div>
+          {/* Desktop */}
+          <div className="hidden md:flex space-x-10">
+            {NAV_LINKS.map(({ label, href }) => (
+              <Link
+                key={label}
+                href={href}
+                onMouseEnter={() => setCoverVisible(true)}
+                onMouseLeave={() => setCoverVisible(false)}
+                style={{
+                  fontSize: "0.95rem",
+                  fontWeight: 500,
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                  color: "#555",
+                  textDecoration: "none",
+                  transition: "color 0.3s ease",
+                }}
+                className="hover:!text-[#1a1a1a]"
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
 
-      {/* Right: Contact Icon */}
-      <div className="flex items-center">
-        <button className="p-2 hover:bg-gray-100 rounded-full transition-colors" aria-label="Contact">
-            {/* Simple Chat/Message Icon SVG */}
-            <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                fill="none" 
-                viewBox="0 0 24 24" 
-                strokeWidth={1.5} 
-                stroke="currentColor" 
-                className="w-6 h-6"
+          {/* Mobile — Hamburger with hover-expand */}
+          <div
+            ref={hamburgerRef}
+            className="md:hidden relative"
+            onMouseEnter={() => setMobileOpen(true)}
+            onMouseLeave={() => setMobileOpen(false)}
+          >
+            {/* Hamburger Icon */}
+            <button
+              aria-label="Menu"
+              onClick={() => setMobileOpen((v) => !v)}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                flexDirection: "column",
+                gap: "5px",
+                padding: "4px",
+              }}
             >
-                <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" 
+              {[0, 1, 2].map((i) => (
+                <span
+                  key={i}
+                  style={{
+                    display: "block",
+                    width: "24px",
+                    height: "2px",
+                    backgroundColor: "#1a1a1a",
+                    borderRadius: "2px",
+                    transition: "transform 0.3s ease, opacity 0.3s ease",
+                    transform:
+                      mobileOpen && i === 0
+                        ? "translateY(7px) rotate(45deg)"
+                        : mobileOpen && i === 2
+                        ? "translateY(-7px) rotate(-45deg)"
+                        : "none",
+                    opacity: mobileOpen && i === 1 ? 0 : 1,
+                  }}
                 />
+              ))}
+            </button>
+
+            {/* Dropdown menu */}
+            <div
+              style={{
+                position: "absolute",
+                top: "calc(100% + 12px)",
+                left: 0,
+                background: "white",
+                borderRadius: "12px",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+                overflow: "hidden",
+                minWidth: "160px",
+                opacity: mobileOpen ? 1 : 0,
+                transform: mobileOpen ? "translateY(0)" : "translateY(-8px)",
+                transition: "opacity 0.25s ease, transform 0.25s ease",
+                pointerEvents: mobileOpen ? "auto" : "none",
+              }}
+            >
+              {NAV_LINKS.map(({ label, href }) => (
+                <Link
+                  key={label}
+                  href={href}
+                  onClick={() => setMobileOpen(false)}
+                  style={{
+                    display: "block",
+                    padding: "14px 20px",
+                    fontSize: "0.85rem",
+                    fontWeight: 500,
+                    letterSpacing: "0.12em",
+                    textTransform: "uppercase",
+                    color: "#333",
+                    textDecoration: "none",
+                    borderBottom: "1px solid #f0f0f0",
+                    transition: "background 0.2s",
+                  }}
+                  className="hover:bg-gray-50"
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ── CENTER: Logo ── */}
+        <div className="absolute left-1/2 -translate-x-1/2">
+          <Link
+            href="/"
+            onMouseEnter={() => setCoverVisible(true)}
+            onMouseLeave={() => setCoverVisible(false)}
+            style={{
+              fontSize: "1.75rem",
+              fontWeight: 700,
+              letterSpacing: "-0.03em",
+              textTransform: "uppercase",
+              color: "#1a1a1a",
+              textDecoration: "none",
+            }}
+          >
+            HOOCK
+          </Link>
+        </div>
+
+        {/* ── RIGHT: Contact bubble icon ── */}
+        <Link
+          href="/contact"
+          aria-label="Contact"
+          onMouseEnter={() => {
+            setContactHovered(true);
+            setCoverVisible(true);
+          }}
+          onMouseLeave={() => {
+            setContactHovered(false);
+            setCoverVisible(false);
+          }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            textDecoration: "none",
+          }}
+        >
+          {/* SVG speech bubble with "CONTACT" text inside on hover */}
+          <div style={{ position: "relative", width: "80px", height: "56px" }}>
+            {/* Bubble outline SVG */}
+            <svg
+              viewBox="0 0 120 60"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              style={{ width: "64px", height: "56px" }}
+            >
+              {/* Bubble body */}
+              <rect
+                x="2"
+                y="2"
+                width="110"
+                height="55"
+                rx="8"
+                ry="8"
+                stroke="#2d3748"
+                strokeWidth="2.5"
+              />
+              {/* Bubble tail */}
+              <path
+                d="M18 62 L14 74 L26 66"
+                stroke="#2d3748"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
-        </button>
-      </div>
-    </nav>
+
+            {/* CONTACT text — fades in on hover */}
+            <span
+              style={{
+                position: "absolute",
+                top: "22px",
+                left: 0,
+                right: "15px",
+                textAlign: "center",
+                fontSize: "0.55rem",
+                fontWeight: 700,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "#2d3748",
+                opacity: contactHovered ? 1 : 0,
+                transition: "opacity 0.25s ease",
+                pointerEvents: "none",
+                userSelect: "none",
+              }}
+            >
+              CONTACT
+            </span>
+          </div>
+        </Link>
+      </nav>
+    </>
   );
 }
