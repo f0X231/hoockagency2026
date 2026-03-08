@@ -18,14 +18,22 @@
       "type": "media",
       "multiple": true,
       "allowedTypes": [
+        "files",
+        "videos"
+      ]
+    },
+    "description": {
+      "type": "text"
+    },
+    "thumbnail": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
         "images",
         "files",
         "videos",
         "audios"
       ]
-    },
-    "description": {
-      "type": "text"
     },
     "gallery": {
       "type": "media",
