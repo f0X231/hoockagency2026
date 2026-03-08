@@ -114,9 +114,9 @@ export default function WorksSection() {
 
   return (
     <section id="works" className="py-12 max-w-7xl mx-auto px-6">
-      <div className="flex flex-col md:flex-row md:items-center mb-12 gap-4">
+      <div className="flex flex-col flex-wrap md:flex-row md:items-center items-start mb-12 gap-4 md:gap-0">
         <h2 className="text-4xl font-bold text-[#D9A384] mr-8">WORKS</h2>
-         <div className="text-xs text-blue-500 max-w-sm border-l-2 border-gray-200 pl-4">
+         <div className="text-xs text-blue-500 max-w-sm border-l-2 border-gray-200 pl-4 mt-2 md:mt-0">
           <p>Creative agency driven by fresh ideas, unique approaches,</p>
           <p>and effective solutions.</p>
         </div>

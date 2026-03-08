@@ -1,0 +1,36 @@
+{
+  "collectionName": "components_home_articles",
+  "info": {
+    "displayName": "article",
+    "icon": "pencil"
+  },
+  "options": {},
+  "attributes": {
+    "no": {
+      "type": "integer"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "link": {
+      "type": "text"
+    },
+    "publishdate": {
+      "type": "date"
+    }
+  },
+  "config": {}
+}

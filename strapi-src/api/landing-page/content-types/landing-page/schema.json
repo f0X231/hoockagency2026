@@ -1,0 +1,35 @@
+{
+  "kind": "singleType",
+  "collectionName": "landing_pages",
+  "info": {
+    "singularName": "landing-page",
+    "pluralName": "landing-pages",
+    "displayName": "landing-page"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "service": {
+      "type": "component",
+      "component": "home.service",
+      "repeatable": true
+    },
+    "work": {
+      "type": "component",
+      "component": "home.work",
+      "repeatable": true
+    },
+    "partner": {
+      "type": "component",
+      "component": "home.partner",
+      "repeatable": true
+    },
+    "article": {
+      "type": "component",
+      "component": "home.article",
+      "repeatable": true
+    }
+  }
+}

@@ -1,10 +1,18 @@
+import Image from "next/image";
+
 export default function Footer() {
   return (
-    <footer className="w-full bg-[#333E48] text-white py-12 mt-20">
+    <footer className="w-full bg-[#333E48] text-white py-12">
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Branding & Socials */}
         <div className="flex flex-col space-y-4">
-          <h2 className="text-xl font-bold uppercase tracking-wider">Hoock</h2>
+          <Image 
+            src="/logo-hoock.png" 
+            alt="Hoock Agency Logo" 
+            width={120} 
+            height={40} 
+            className="object-contain" 
+          />
           <p className="text-sm text-gray-400">
             Creative agency driven by fresh ideas, unique approaches, and effective solutions.
           </p>

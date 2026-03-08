@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useRef } from "react";
 
 const NAV_LINKS = [
@@ -185,16 +186,16 @@ export default function Navbar() {
             href="/"
             onMouseEnter={() => setCoverVisible(true)}
             onMouseLeave={() => setCoverVisible(false)}
-            style={{
-              fontSize: "1.75rem",
-              fontWeight: 700,
-              letterSpacing: "-0.03em",
-              textTransform: "uppercase",
-              color: "#1a1a1a",
-              textDecoration: "none",
-            }}
+            className="flex items-center justify-center transition-transform hover:scale-105"
           >
-            HOOCK
+            <Image 
+              src="/logo.png" 
+              alt="Hoock Agency Logo" 
+              width={140} 
+              height={45} 
+              className="object-contain"
+              priority
+            />
           </Link>
         </div>
 

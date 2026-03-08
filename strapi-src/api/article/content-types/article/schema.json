@@ -1,10 +1,10 @@
 {
   "kind": "collectionType",
-  "collectionName": "services",
+  "collectionName": "articles",
   "info": {
-    "singularName": "service",
-    "pluralName": "services",
-    "displayName": "Service"
+    "singularName": "article",
+    "pluralName": "articles",
+    "displayName": "Article"
   },
   "options": {
     "draftAndPublish": true
@@ -17,9 +17,9 @@
     "description": {
       "type": "text"
     },
-    "image": {
+    "thumbnail": {
       "type": "media",
-      "multiple": true,
+      "multiple": false,
       "allowedTypes": [
         "images",
         "files",
@@ -27,9 +27,9 @@
         "audios"
       ]
     },
-    "imagemobile": {
+    "cover": {
       "type": "media",
-      "multiple": true,
+      "multiple": false,
       "allowedTypes": [
         "images",
         "files",
@@ -37,15 +37,20 @@
         "audios"
       ]
     },
-    "imagefull": {
-      "type": "media",
-      "multiple": true,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
+    "detail": {
+      "type": "richtext"
+    },
+    "publishdate": {
+      "type": "date"
+    },
+    "isactive": {
+      "type": "boolean"
+    },
+    "author": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::author.author",
+      "inversedBy": "articles"
     }
   }
 }

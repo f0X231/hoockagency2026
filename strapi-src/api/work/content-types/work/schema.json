@@ -1,10 +1,10 @@
 {
   "kind": "collectionType",
-  "collectionName": "services",
+  "collectionName": "works",
   "info": {
-    "singularName": "service",
-    "pluralName": "services",
-    "displayName": "Service"
+    "singularName": "work",
+    "pluralName": "works",
+    "displayName": "Work"
   },
   "options": {
     "draftAndPublish": true
@@ -14,10 +14,28 @@
     "title": {
       "type": "string"
     },
+    "cover": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": [
+        "files",
+        "videos"
+      ]
+    },
     "description": {
       "type": "text"
     },
-    "image": {
+    "thumbnail": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "gallery": {
       "type": "media",
       "multiple": true,
       "allowedTypes": [
@@ -27,25 +45,8 @@
         "audios"
       ]
     },
-    "imagemobile": {
-      "type": "media",
-      "multiple": true,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
-    },
-    "imagefull": {
-      "type": "media",
-      "multiple": true,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
+    "tags": {
+      "type": "text"
     }
   }
 }
