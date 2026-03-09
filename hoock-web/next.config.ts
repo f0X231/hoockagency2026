@@ -2,26 +2,33 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    dangerouslyAllowSVG: true,
+    // unoptimized: process.env.NODE_ENV === 'development',
+    unoptimized: true,
     remotePatterns: [
       {
-        protocol: "https",
-        hostname: "picsum.photos",
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '1337',
+        pathname: '/uploads/**',
       },
       {
-        protocol: "http",
-        hostname: "localhost",
-        port: "1337",
-        pathname: '/uploads/**'
+        protocol: 'http',
+        hostname: '127.0.0.1',
+        port: '1337',
+        pathname: '/uploads/**',
       },
       {
-        protocol: "http",
-        hostname: "127.0.0.1",
-        port: "1337",
-        pathname: '/uploads/**'
+        protocol: 'https',
+        hostname: 'strong-art-a39006d263.strapiapp.com', 
+        pathname: '/uploads/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com', 
+        pathname: '/**',
+      }
     ],
-    dangerouslyAllowSVG: true,
-    unoptimized: process.env.NODE_ENV === 'development',
   },
 };
 
