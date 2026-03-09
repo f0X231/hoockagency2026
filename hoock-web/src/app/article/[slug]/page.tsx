@@ -63,7 +63,7 @@ async function getArticle(slug: string): Promise<ArticleDetail | null> {
     
     // Fetch all articles with a high limit to ensure we can find the matching slug
     const res = await fetch(`${STRAPI_URL}/api/articles?populate=*&status=published&pagination[limit]=100`, {
-      cache: 'no-store'
+      next: { revalidate: 3600 }
     });
 
     if (!res.ok) {

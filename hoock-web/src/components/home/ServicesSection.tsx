@@ -21,7 +21,7 @@ async function getServices(): Promise<ServiceItem[]> {
   try {
     const STRAPI_URL = process.env.URI_STRAPI || 'http://localhost:1337';
     const res = await fetch(`${STRAPI_URL}/api/services?populate=*&status=published`, {
-      cache: 'no-store'
+      next: { revalidate: 3600 }
     });
     
     if (!res.ok) {

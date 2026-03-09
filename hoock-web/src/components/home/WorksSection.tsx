@@ -67,7 +67,10 @@ export default function WorksSection() {
       const STRAPI_URL = process.env.NEXT_PUBLIC_URI_STRAPI || process.env.URI_STRAPI || 'http://localhost:1337';
       const url = `${STRAPI_URL}/api/works?populate=*&status=published&sort=updatedAt:desc&pagination[start]=${currentStart}&pagination[limit]=${limit}`;
       
-      const res = await fetch(url, { headers: { 'Content-Type': 'application/json' } });
+      const res = await fetch(url, { 
+        headers: { 'Content-Type': 'application/json' },
+        next: { revalidate: 3600 }
+      });
       
       if (!res.ok) throw new Error('Failed to fetch works');
 

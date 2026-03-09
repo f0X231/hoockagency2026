@@ -82,7 +82,9 @@ export default function WorkPage({ params }: { params: Promise<{ slug: string }>
       try {
         const STRAPI_URL = process.env.NEXT_PUBLIC_URI_STRAPI || process.env.URI_STRAPI || 'http://localhost:1337';
         // Need to fetch 100 to filter by title locally (since we use frontend slugs)
-        const res = await fetch(`${STRAPI_URL}/api/works?populate=*&status=published&pagination[limit]=100`);
+        const res = await fetch(`${STRAPI_URL}/api/works?populate=*&status=published&pagination[limit]=100`, {
+          next: { revalidate: 3600 }
+        });
         
         if (!res.ok) throw new Error('Failed to fetch works');
         const json = await res.json();
