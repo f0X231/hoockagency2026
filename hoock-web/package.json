@@ -6,9 +6,10 @@
     "dev": "next dev",
     "start": "next start",
     "lint": "eslint",
-    "build": "opennextjs-cloudflare build",
-    "deploy": "opennextjs-cloudflare build --config ./open-next.config.ts && wrangler deploy",
-    "preview": "opennextjs-cloudflare build && wrangler dev"
+    "build:next": "next build",
+    "build": "opennextjs-cloudflare build --build-command 'npm run build:next'",
+    "deploy": "npm run build && wrangler deploy",
+    "preview": "npm run build && wrangler dev"
   },
   "dependencies": {
     "next": "^16.1.6",
