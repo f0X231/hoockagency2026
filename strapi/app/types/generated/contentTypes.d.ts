@@ -528,6 +528,38 @@ export interface ApiContactPageContactPage extends Struct.SingleTypeSchema {
   };
 }
 
+export interface ApiContactSubmissionContactSubmission
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'contact_submissions';
+  info: {
+    displayName: 'Contact Submission';
+    pluralName: 'contact-submissions';
+    singularName: 'contact-submission';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    email: Schema.Attribute.Email & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::contact-submission.contact-submission'
+    > &
+      Schema.Attribute.Private;
+    message: Schema.Attribute.Text & Schema.Attribute.Required;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    phone: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiLandingPageLandingPage extends Struct.SingleTypeSchema {
   collectionName: 'landing_pages';
   info: {
@@ -1175,6 +1207,7 @@ declare module '@strapi/strapi' {
       'api::article.article': ApiArticleArticle;
       'api::author.author': ApiAuthorAuthor;
       'api::contact-page.contact-page': ApiContactPageContactPage;
+      'api::contact-submission.contact-submission': ApiContactSubmissionContactSubmission;
       'api::landing-page.landing-page': ApiLandingPageLandingPage;
       'api::partner.partner': ApiPartnerPartner;
       'api::service.service': ApiServiceService;

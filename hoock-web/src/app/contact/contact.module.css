@@ -233,6 +233,28 @@
   transform: translateY(0);
 }
 
+.inputError {
+  border-bottom-color: #e53e3e !important;
+}
+
+.errorText {
+  display: block;
+  color: #e53e3e;
+  font-size: 0.75rem;
+  margin-top: 4px;
+}
+
+.successMessage {
+  text-align: center;
+  padding: 2rem;
+  color: #2d3748;
+}
+
+.successMessage p {
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
 /* Responsive */
 @media (max-width: 968px) {
   .content {
@@ -263,3 +285,4 @@
     flex-wrap: wrap;
   }
 }
+
