@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -17,105 +17,117 @@ interface ArticleItem {
   title: string;
   updatedAt: string;
   publishedAt: string;
-  // Handle both potential field names for the cover image
   thumbnail?: StrapiImage[] | StrapiImage | { url: string } | null;
   image?: StrapiImage[] | StrapiImage | { url: string } | null;
 }
 
-// Reusable function to extract image URL
+const STRAPI_URL =
+  process.env.NEXT_PUBLIC_URI_STRAPI || 'https://strong-art-a39006d263.strapiapp.com';
+
 const getImageUrl = (imageProp: any): string => {
-  if (!imageProp) return "https://picsum.photos/400/300";
-
-  // Use NEXT_PUBLIC_URI_STRAPI since this is a Client Component
-  const STRAPI_URL = process.env.NEXT_PUBLIC_URI_STRAPI || process.env.URI_STRAPI || 'https://strong-art-a39006d263.strapiapp.com';
-
+  if (!imageProp) return 'https://picsum.photos/400/300';
   if (Array.isArray(imageProp)) {
-    if (imageProp.length === 0) return "https://picsum.photos/400/300";
-    const url = imageProp[0].url;
-    if (!url) return "https://picsum.photos/400/300";
+    if (!imageProp.length) return 'https://picsum.photos/400/300';
+    const url = imageProp[0]?.url;
+    if (!url) return 'https://picsum.photos/400/300';
     return url.startsWith('http') ? url : `${STRAPI_URL}${url}`;
   }
-
   if ('url' in imageProp && imageProp.url) {
-    return imageProp.url.startsWith('http') ? imageProp.url : `${STRAPI_URL}${imageProp.url}`;
+    return imageProp.url.startsWith('http')
+      ? imageProp.url
+      : `${STRAPI_URL}${imageProp.url}`;
   }
-
-  if (imageProp.data?.attributes?.url) { // Fallback for deeply nested Strapi v4
+  if (imageProp.data?.attributes?.url) {
     const url = imageProp.data.attributes.url;
     return url.startsWith('http') ? url : `${STRAPI_URL}${url}`;
   }
-
-  return "https://picsum.photos/400/300";
+  return 'https://picsum.photos/400/300';
 };
 
-// Formatter for display dates
 const formatDate = (dateString: string) => {
   if (!dateString) return '';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
+  return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   });
 };
+
+// Fetch with retry — waits longer on each attempt (good for Strapi cold starts)
+async function fetchWithRetry(url: string, retries = 3, timeoutMs = 20000): Promise<Response> {
+  for (let attempt = 0; attempt < retries; attempt++) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, {
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        // cache: 'no-store' removed — let browser cache for performance
+      });
+      clearTimeout(timeoutId);
+      if (res.ok) return res;
+      // 5xx errors are worth retrying; 4xx are not
+      if (res.status < 500) throw new Error(`HTTP ${res.status}`);
+    } catch (err: any) {
+      clearTimeout(timeoutId);
+      const isLastAttempt = attempt === retries - 1;
+      if (isLastAttempt) throw err;
+      // Exponential back-off: 1s, 2s, 4s
+      await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt));
+    }
+  }
+  throw new Error('All retries exhausted');
+}
+
+const LIMIT = 3;
 
 export default function ArticleSection() {
   const [articles, setArticles] = useState<ArticleItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [start, setStart] = useState(0);
-  const limit = 3;
+  const [error, setError] = useState<string | null>(null);
+  const [startIndex, setStartIndex] = useState(0);
 
-  const fetchArticles = async (currentStart: number, isLoadMore = false) => {
+  const fetchArticles = useCallback(async (currentStart: number, isLoadMore = false) => {
     try {
-      if (isLoadMore) setLoadingMore(true);
-      else setLoading(true);
+      isLoadMore ? setLoadingMore(true) : setLoading(true);
+      setError(null);
 
-      const STRAPI_URL = process.env.NEXT_PUBLIC_URI_STRAPI || process.env.URI_STRAPI || 'https://strong-art-a39006d263.strapiapp.com';
-      // Fetch URL including pagination and ordering by updatedAt:desc
-      const url = `${STRAPI_URL}/api/articles?populate=*&status=published&sort=updatedAt:desc&pagination[start]=${currentStart}&pagination[limit]=${limit}`;
-      
-      const res = await fetch(url, { 
-        headers: { 'Content-Type': 'application/json' },
-        next: { revalidate: 3600 }
-      });
-      
-      if (!res.ok) throw new Error('Failed to fetch articles');
-
+      const url = `${STRAPI_URL}/api/articles?populate=*&status=published&sort=updatedAt:desc&pagination[start]=${currentStart}&pagination[limit]=${LIMIT}`;
+      const res = await fetchWithRetry(url);
       const json = await res.json();
-      const newArticles = json.data || [];
-      const total = json.meta?.pagination?.total || 0;
 
-      if (isLoadMore) {
-        setArticles(prev => [...prev, ...newArticles]);
-      } else {
-        setArticles(newArticles);
-      }
+      const newArticles: ArticleItem[] = json.data || [];
+      const total: number = json.meta?.pagination?.total ?? 0;
 
-      // Check if we fetched all available articles
-      if (currentStart + limit >= total || newArticles.length < limit) {
-        setHasMore(false);
-      }
-    } catch (error) {
-      console.error('Error fetching articles:', error);
-      setHasMore(false); // Stop trying to load more if it fails
+      setArticles((prev) =>
+        isLoadMore ? [...prev, ...newArticles] : newArticles
+      );
+      setHasMore(currentStart + LIMIT < total && newArticles.length === LIMIT);
+    } catch (err: any) {
+      console.error('Article fetch failed:', err);
+      setError(
+        err?.name === 'AbortError'
+          ? 'Request timed out. Strapi may be starting up — please try again in a moment.'
+          : 'Could not load articles. Please check your Strapi connection.'
+      );
+      setHasMore(false);
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
-  };
+  }, []);
 
-  // Initial load
   useEffect(() => {
     fetchArticles(0);
-  }, []);
+  }, [fetchArticles]);
 
   const handleLoadMore = () => {
     if (loadingMore || !hasMore) return;
-    const nextStart = start + limit;
-    setStart(nextStart);
-    fetchArticles(nextStart, true);
+    const next = startIndex + LIMIT;
+    setStartIndex(next);
+    fetchArticles(next, true);
   };
 
   return (
@@ -125,8 +137,18 @@ export default function ArticleSection() {
 
         {loading && articles.length === 0 ? (
           <div className="text-center p-12 text-gray-300">
-            <span className="inline-block animate-spin border-4 border-gray-400 border-t-white rounded-full w-8 h-8 mb-4"></span>
-            <p>Loading articles...</p>
+            <span className="inline-block animate-spin border-4 border-gray-400 border-t-white rounded-full w-8 h-8 mb-4" />
+            <p>Loading articles…</p>
+          </div>
+        ) : error ? (
+          <div className="text-center p-12 bg-white/5 rounded-lg border border-white/10">
+            <p className="text-red-300 mb-4">{error}</p>
+            <button
+              onClick={() => fetchArticles(0)}
+              className="px-6 py-2 bg-white/10 hover:bg-white/20 rounded border border-white/20 text-sm font-medium transition-colors"
+            >
+              Retry
+            </button>
           </div>
         ) : articles.length === 0 ? (
           <div className="text-center p-12 bg-white/5 rounded-lg border border-white/10">
@@ -135,35 +157,28 @@ export default function ArticleSection() {
         ) : (
           <div className="space-y-6">
             {articles.map((article) => {
-              // Ensure we fallback between possible image field names
-              const imageUrl = getImageUrl(article.thumbnail || article.image);
-
-              // Create a URL-friendly slug from the title (replace spaces with hyphens, lowercase)
-              const titleSlug = article.title 
-                ? article.title.trim().toLowerCase().replace(/\s+/g, '-') 
-                : article.documentId || article.id?.toString();
+              const imageUrl = getImageUrl(article.thumbnail ?? article.image);
+              const titleSlug = article.title
+                ? article.title.trim().toLowerCase().replace(/\s+/g, '-')
+                : article.documentId ?? article.id?.toString();
 
               return (
-                <Link 
-                  href={`/article/${titleSlug}`} 
-                  key={`article-${article.id}`} 
+                <Link
+                  href={`/article/${titleSlug}`}
+                  key={`article-${article.id}`}
                   className="group bg-white/10 p-6 rounded-lg backdrop-blur-sm flex flex-col md:flex-row gap-6 hover:bg-white/20 transition-all cursor-pointer block border border-transparent hover:border-white/10"
                 >
-                  {/* Thumbnail */}
                   <div className="relative w-full md:w-64 h-40 flex-shrink-0 rounded-md overflow-hidden bg-gray-800">
-                    <Image 
-                      src={imageUrl} 
-                      alt={article.title || 'Article Thumbnail'} 
-                      fill 
-                      className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
+                    <Image
+                      src={imageUrl}
+                      alt={article.title ?? 'Article Thumbnail'}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                     />
                   </div>
-                  
-                  {/* Content */}
                   <div className="flex flex-col justify-center w-full">
-                    {/* Use publishedAt or fallback to updatedAt */}
                     <span className="text-xs text-gray-300 mb-2 tracking-wide font-medium">
-                      {formatDate(article.publishedAt || article.updatedAt)}
+                      {formatDate(article.publishedAt ?? article.updatedAt)}
                     </span>
                     <h3 className="text-xl md:text-2xl font-bold leading-snug mb-4 text-white group-hover:text-[#D9A384] transition-colors line-clamp-2">
                       {article.title}
@@ -181,7 +196,6 @@ export default function ArticleSection() {
           </div>
         )}
 
-        {/* Load More Button */}
         {hasMore && articles.length > 0 && (
           <div className="mt-12 flex justify-center">
             <button
@@ -191,7 +205,7 @@ export default function ArticleSection() {
             >
               {loadingMore ? (
                 <>
-                  <span className="inline-block animate-spin border-2 border-current border-t-transparent rounded-full w-4 h-4"></span>
+                  <span className="inline-block animate-spin border-2 border-current border-t-transparent rounded-full w-4 h-4" />
                   Loading...
                 </>
               ) : (
