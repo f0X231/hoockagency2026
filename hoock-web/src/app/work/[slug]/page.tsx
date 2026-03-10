@@ -25,7 +25,7 @@ interface WorkDetail {
 const getImageUrl = (imageProp: any): string => {
   if (!imageProp) return "https://picsum.photos/1200/600";
   
-  const STRAPI_URL = process.env.NEXT_PUBLIC_URI_STRAPI || process.env.URI_STRAPI || 'http://localhost:1337';
+  const STRAPI_URL = process.env.NEXT_PUBLIC_URI_STRAPI || process.env.URI_STRAPI || 'https://strong-art-a39006d263.strapiapp.com';
 
   if (Array.isArray(imageProp)) {
     if (imageProp.length === 0) return "https://picsum.photos/1200/600";
@@ -49,7 +49,7 @@ const getImageUrl = (imageProp: any): string => {
 // Flatten Strapi v4/v5 gallery arrays
 const extractGalleryUrls = (galleryProp: any): string[] => {
   if (!galleryProp) return [];
-  const STRAPI_URL = process.env.NEXT_PUBLIC_URI_STRAPI || process.env.URI_STRAPI || 'http://localhost:1337';
+  const STRAPI_URL = process.env.NEXT_PUBLIC_URI_STRAPI || process.env.URI_STRAPI || 'https://strong-art-a39006d263.strapiapp.com';
 
   let rawArray = [];
   if (Array.isArray(galleryProp)) {
@@ -80,7 +80,7 @@ export default function WorkPage({ params }: { params: Promise<{ slug: string }>
   useEffect(() => {
     const fetchWork = async () => {
       try {
-        const STRAPI_URL = process.env.NEXT_PUBLIC_URI_STRAPI || process.env.URI_STRAPI || 'http://localhost:1337';
+        const STRAPI_URL = process.env.NEXT_PUBLIC_URI_STRAPI || process.env.URI_STRAPI || 'https://strong-art-a39006d263.strapiapp.com';
         // Need to fetch 100 to filter by title locally (since we use frontend slugs)
         const res = await fetch(`${STRAPI_URL}/api/works?populate=*&status=published&pagination[limit]=100`, {
           next: { revalidate: 3600 }

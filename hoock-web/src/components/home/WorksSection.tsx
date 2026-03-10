@@ -23,7 +23,7 @@ interface WorkItem {
 const getImageUrl = (imageProp: any): string => {
   if (!imageProp) return "https://picsum.photos/400/300";
 
-  const STRAPI_URL = process.env.NEXT_PUBLIC_URI_STRAPI || process.env.URI_STRAPI || 'http://localhost:1337';
+  const STRAPI_URL = process.env.NEXT_PUBLIC_URI_STRAPI || process.env.URI_STRAPI || 'https://strong-art-a39006d263.strapiapp.com';
 
   if (Array.isArray(imageProp)) {
     if (imageProp.length === 0) return "https://picsum.photos/400/300";
@@ -64,7 +64,7 @@ export default function WorksSection() {
       if (isLoadMore) setLoadingMore(true);
       else setLoading(true);
 
-      const STRAPI_URL = process.env.NEXT_PUBLIC_URI_STRAPI || process.env.URI_STRAPI || 'http://localhost:1337';
+      const STRAPI_URL = process.env.NEXT_PUBLIC_URI_STRAPI || process.env.URI_STRAPI || 'https://strong-art-a39006d263.strapiapp.com';
       const url = `${STRAPI_URL}/api/works?populate=*&status=published&sort=updatedAt:desc&pagination[start]=${currentStart}&pagination[limit]=${limit}`;
       
       const res = await fetch(url, { 

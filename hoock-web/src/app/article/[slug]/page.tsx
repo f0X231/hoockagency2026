@@ -28,7 +28,7 @@ interface ArticleDetail {
 const getImageUrl = (imageProp: StrapiImage[] | StrapiImage | { url: string } | null | undefined): string => {
   if (!imageProp) return "https://picsum.photos/1200/600";
   
-  const STRAPI_URL = process.env.URI_STRAPI || 'http://localhost:1337';
+  const STRAPI_URL = process.env.URI_STRAPI || 'https://strong-art-a39006d263.strapiapp.com';
 
   if (Array.isArray(imageProp)) {
     if (imageProp.length === 0) return "https://picsum.photos/1200/600";
@@ -52,7 +52,7 @@ const getImageUrl = (imageProp: StrapiImage[] | StrapiImage | { url: string } | 
 
 async function getArticle(slug: string): Promise<ArticleDetail | null> {
   try {
-    const STRAPI_URL = process.env.URI_STRAPI || 'http://localhost:1337';
+    const STRAPI_URL = process.env.URI_STRAPI || 'https://strong-art-a39006d263.strapiapp.com';
     
     // Instead of fetching directly by ID, fetch all articles and filter manually to handle the slug conversion
     // Since Strapi allows filtering, we fetch matching articles

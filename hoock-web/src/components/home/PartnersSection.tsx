@@ -16,7 +16,7 @@ interface PartnerItem {
 
 async function getPartners(): Promise<PartnerItem[]> {
   try {
-    const STRAPI_URL = process.env.URI_STRAPI || 'http://localhost:1337';
+    const STRAPI_URL = process.env.URI_STRAPI || 'https://strong-art-a39006d263.strapiapp.com';
     const res = await fetch(`${STRAPI_URL}/api/partners?populate=*&status=published`, {
       next: { revalidate: 3600 }
     });
@@ -36,7 +36,7 @@ async function getPartners(): Promise<PartnerItem[]> {
 const getImageUrl = (imageProp: StrapiImage[] | StrapiImage | { url: string } | null | undefined): string => {
   if (!imageProp) return "https://picsum.photos/200/50";
 
-  const STRAPI_URL = process.env.URI_STRAPI || 'http://localhost:1337';
+  const STRAPI_URL = process.env.URI_STRAPI || 'https://strong-art-a39006d263.strapiapp.com';
 
   if (Array.isArray(imageProp)) {
     if (imageProp.length === 0) return "https://picsum.photos/200/50";

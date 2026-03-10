@@ -19,7 +19,7 @@ interface ServiceItem {
 
 async function getServices(): Promise<ServiceItem[]> {
   try {
-    const STRAPI_URL = process.env.URI_STRAPI || 'http://localhost:1337';
+    const STRAPI_URL = process.env.URI_STRAPI || 'https://strong-art-a39006d263.strapiapp.com';
     const res = await fetch(`${STRAPI_URL}/api/services?populate=*&status=published`, {
       next: { revalidate: 3600 }
     });
@@ -39,7 +39,7 @@ async function getServices(): Promise<ServiceItem[]> {
 const getImageUrl = (imageProp: StrapiImage[] | StrapiImage | { url: string } | null | undefined): string => {
   if (!imageProp) return "https://picsum.photos/300/500";
 
-  const STRAPI_URL = process.env.URI_STRAPI || 'http://localhost:1337';
+  const STRAPI_URL = process.env.URI_STRAPI || 'https://strong-art-a39006d263.strapiapp.com';
 
   if (Array.isArray(imageProp)) {
     if (imageProp.length === 0) return "https://picsum.photos/300/500";
@@ -73,7 +73,7 @@ export default async function ServicesSection() {
       {services.length === 0 ? (
         <div className="text-center p-10 text-gray-500 bg-gray-50 rounded-lg border border-gray-200">
           <p className="font-semibold text-lg mb-2">No services found.</p>
-          <p className="text-sm">Please ensure your Strapi server is running at {process.env.URI_STRAPI || 'http://localhost:1337'}</p>
+          <p className="text-sm">Please ensure your Strapi server is running at {process.env.URI_STRAPI || 'https://strong-art-a39006d263.strapiapp.com'}</p>
           <p className="text-sm mt-1">and you have published Services content accessible via API.</p>
         </div>
       ) : (
