@@ -7,7 +7,7 @@
     "start": "next start",
     "lint": "eslint",
     "build:next": "next build",
-    "build": "opennextjs-cloudflare build --build-command 'npm run build:next'",
+    "build": "opennextjs-cloudflare build --build-command 'next build'",
     "deploy": "npm run build && wrangler deploy",
     "preview": "npm run build && wrangler dev"
   },
