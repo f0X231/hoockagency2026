@@ -5,11 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "start": "next start",
-    "lint": "eslint",
-    "build:next": "next build",
-    "build": "opennextjs-cloudflare build --build-command 'next build'",
-    "deploy": "npm run build && wrangler deploy",
-    "preview": "npm run build && wrangler dev"
+    "build": "next build",
+    "build:cf": "opennextjs-cloudflare build",
+    "deploy": "opennextjs-cloudflare deploy"
   },
   "dependencies": {
     "next": "^16.1.6",
