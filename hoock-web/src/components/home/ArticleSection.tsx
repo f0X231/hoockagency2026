@@ -21,6 +21,7 @@ interface ArticleItem {
   image?: StrapiImage[] | StrapiImage | { url: string } | null;
 }
 
+// Still needed for resolving image URLs returned in the payload
 const STRAPI_URL =
   process.env.NEXT_PUBLIC_URI_STRAPI || 'https://strong-art-a39006d263.strapiapp.com';
 
@@ -53,7 +54,6 @@ const formatDate = (dateString: string) => {
   });
 };
 
-// Fetch with retry — waits longer on each attempt (good for Strapi cold starts)
 async function fetchWithRetry(url: string, retries = 3, timeoutMs = 20000): Promise<Response> {
   for (let attempt = 0; attempt < retries; attempt++) {
     const controller = new AbortController();
@@ -62,17 +62,13 @@ async function fetchWithRetry(url: string, retries = 3, timeoutMs = 20000): Prom
       const res = await fetch(url, {
         headers: { 'Content-Type': 'application/json' },
         signal: controller.signal,
-        // cache: 'no-store' removed — let browser cache for performance
       });
       clearTimeout(timeoutId);
       if (res.ok) return res;
-      // 5xx errors are worth retrying; 4xx are not
       if (res.status < 500) throw new Error(`HTTP ${res.status}`);
     } catch (err: any) {
       clearTimeout(timeoutId);
-      const isLastAttempt = attempt === retries - 1;
-      if (isLastAttempt) throw err;
-      // Exponential back-off: 1s, 2s, 4s
+      if (attempt === retries - 1) throw err;
       await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt));
     }
   }
@@ -94,23 +90,21 @@ export default function ArticleSection() {
       isLoadMore ? setLoadingMore(true) : setLoading(true);
       setError(null);
 
-      const url = `${STRAPI_URL}/api/articles?populate=*&status=published&sort=updatedAt:desc&pagination[start]=${currentStart}&pagination[limit]=${LIMIT}`;
+      const url = `/api/articles?start=${currentStart}&limit=${LIMIT}`;
       const res = await fetchWithRetry(url);
       const json = await res.json();
 
       const newArticles: ArticleItem[] = json.data || [];
       const total: number = json.meta?.pagination?.total ?? 0;
 
-      setArticles((prev) =>
-        isLoadMore ? [...prev, ...newArticles] : newArticles
-      );
+      setArticles((prev) => isLoadMore ? [...prev, ...newArticles] : newArticles);
       setHasMore(currentStart + LIMIT < total && newArticles.length === LIMIT);
     } catch (err: any) {
       console.error('Article fetch failed:', err);
       setError(
         err?.name === 'AbortError'
-          ? 'Request timed out. Strapi may be starting up — please try again in a moment.'
-          : 'Could not load articles. Please check your Strapi connection.'
+          ? 'Request timed out — please try again in a moment.'
+          : 'Could not load articles. Please try again later.'
       );
       setHasMore(false);
     } finally {

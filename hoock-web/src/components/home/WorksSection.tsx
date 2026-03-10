@@ -102,7 +102,7 @@ export default function WorksSection() {
       isLoadMore ? setLoadingMore(true) : setLoading(true);
       setError(null);
 
-      const url = `${STRAPI_URL}/api/works?populate=*&status=published&sort=updatedAt:desc&pagination[start]=${currentStart}&pagination[limit]=${LIMIT}`;
+      const url = `/api/works?start=${currentStart}&limit=${LIMIT}`;
       const res = await fetchWithRetry(url);
       const json = await res.json();
 
