@@ -7,7 +7,7 @@
     "start": "next start",
     "lint": "eslint",
     "build": "opennextjs-cloudflare build",
-    "deploy": "opennextjs-cloudflare build --config ./open-next.config.ts && wrangler deploy",
+    "deploy": "pwd && ls -la && opennextjs-cloudflare build && wrangler deploy",
     "preview": "opennextjs-cloudflare build && wrangler dev"
   },
   "dependencies": {
