@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import { cachedFetch } from '@/lib/cache';
 
 interface StrapiImage {
   id: number;
@@ -46,9 +47,16 @@ export default function ServicesSection() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch('/api/services');
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
+
+      const json = await cachedFetch<{ data: ServiceItem[] }>(
+        '/api/services',
+        async (url) => {
+          const res = await fetch(url);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        }
+      );
+
       setServices(json.data || []);
     } catch (err: any) {
       console.error('Services fetch failed:', err);

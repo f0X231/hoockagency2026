@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { cachedFetch } from '@/lib/cache';
 
 interface StrapiImage {
   id: number;
@@ -21,7 +22,6 @@ interface ArticleItem {
   image?: StrapiImage[] | StrapiImage | { url: string } | null;
 }
 
-// Still needed for resolving image URLs returned in the payload
 const STRAPI_URL =
   process.env.NEXT_PUBLIC_URI_STRAPI || 'https://strong-art-a39006d263.strapiapp.com';
 
@@ -90,9 +90,15 @@ export default function ArticleSection() {
       isLoadMore ? setLoadingMore(true) : setLoading(true);
       setError(null);
 
-      const url = `/api/articles?start=${currentStart}&limit=${LIMIT}`;
-      const res = await fetchWithRetry(url);
-      const json = await res.json();
+      const apiUrl = `/api/articles?start=${currentStart}&limit=${LIMIT}`;
+
+      const json = await cachedFetch<{ data: ArticleItem[]; meta: { pagination: { total: number } } }>(
+        apiUrl,
+        async (url) => {
+          const res = await fetchWithRetry(url);
+          return res.json();
+        }
+      );
 
       const newArticles: ArticleItem[] = json.data || [];
       const total: number = json.meta?.pagination?.total ?? 0;

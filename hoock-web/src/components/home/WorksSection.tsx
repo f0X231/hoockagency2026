@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { cachedFetch } from '@/lib/cache';
 
 interface StrapiImage {
   id: number;
@@ -61,7 +62,7 @@ async function fetchWithRetry(url: string, retries = 3, timeoutMs = 20000): Prom
     } catch (err: any) {
       clearTimeout(timeoutId);
       if (attempt === retries - 1) throw err;
-      await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt)); // 1s, 2s, 4s
+      await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt));
     }
   }
   throw new Error('All retries exhausted');
@@ -69,7 +70,6 @@ async function fetchWithRetry(url: string, retries = 3, timeoutMs = 20000): Prom
 
 const LIMIT = 5;
 
-// Reusable card component to avoid repetition
 function WorkCard({ work }: { work: WorkItem }) {
   return (
     <Link
@@ -102,9 +102,15 @@ export default function WorksSection() {
       isLoadMore ? setLoadingMore(true) : setLoading(true);
       setError(null);
 
-      const url = `/api/works?start=${currentStart}&limit=${LIMIT}`;
-      const res = await fetchWithRetry(url);
-      const json = await res.json();
+      const apiUrl = `/api/works?start=${currentStart}&limit=${LIMIT}`;
+
+      const json = await cachedFetch<{ data: WorkItem[]; meta: { pagination: { total: number } } }>(
+        apiUrl,
+        async (url) => {
+          const res = await fetchWithRetry(url);
+          return res.json();
+        }
+      );
 
       const newWorks: WorkItem[] = json.data || [];
       const total: number = json.meta?.pagination?.total ?? 0;

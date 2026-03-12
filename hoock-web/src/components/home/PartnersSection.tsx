@@ -1,4 +1,8 @@
+"use client";
+
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { cachedFetch } from '@/lib/cache';
 
 interface StrapiImage {
   id: number;
@@ -14,7 +18,8 @@ interface PartnerItem {
   logo: StrapiImage[] | StrapiImage | { url: string } | null;
 }
 
-const STRAPI_URL = process.env.URI_STRAPI || 'https://strong-art-a39006d263.strapiapp.com';
+const STRAPI_URL =
+  process.env.NEXT_PUBLIC_URI_STRAPI || 'https://strong-art-a39006d263.strapiapp.com';
 
 async function fetchWithRetry(url: string, retries = 3, timeoutMs = 20000): Promise<Response> {
   for (let attempt = 0; attempt < retries; attempt++) {
@@ -22,7 +27,7 @@ async function fetchWithRetry(url: string, retries = 3, timeoutMs = 20000): Prom
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     try {
       const res = await fetch(url, {
-        next: { revalidate: 3600 },
+        headers: { 'Content-Type': 'application/json' },
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
@@ -31,26 +36,15 @@ async function fetchWithRetry(url: string, retries = 3, timeoutMs = 20000): Prom
     } catch (err: any) {
       clearTimeout(timeoutId);
       if (attempt === retries - 1) throw err;
-      await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt)); // 1s, 2s, 4s
+      await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt));
     }
   }
   throw new Error('All retries exhausted');
 }
 
-async function getPartners(): Promise<PartnerItem[]> {
-  try {
-    const res = await fetchWithRetry(
-      `${STRAPI_URL}/api/partners?populate=*&status=published`
-    );
-    const json = await res.json();
-    return json.data || [];
-  } catch (error) {
-    console.warn('Error fetching partners:', error);
-    return [];
-  }
-}
-
-const getImageUrl = (imageProp: StrapiImage[] | StrapiImage | { url: string } | null | undefined): string => {
+const getImageUrl = (
+  imageProp: StrapiImage[] | StrapiImage | { url: string } | null | undefined
+): string => {
   if (!imageProp) return 'https://picsum.photos/200/50';
   if (Array.isArray(imageProp)) {
     if (!imageProp.length) return 'https://picsum.photos/200/50';
@@ -64,18 +58,51 @@ const getImageUrl = (imageProp: StrapiImage[] | StrapiImage | { url: string } | 
   return 'https://picsum.photos/200/50';
 };
 
-export default async function PartnersSection() {
-  const partners = await getPartners();
-  const displayPartners = partners.length > 0
-    ? [...partners, ...partners, ...partners]
-    : [];
+export default function PartnersSection() {
+  const [partners, setPartners] = useState<PartnerItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadPartners() {
+      try {
+        // Partners fetch ตรงไป Strapi (ไม่ผ่าน Next.js API route)
+        // ใช้ NEXT_PUBLIC_URI_STRAPI เพราะรันฝั่ง client
+        const apiUrl = `${STRAPI_URL}/api/partners?populate=*&status=published`;
+
+        const json = await cachedFetch<{ data: PartnerItem[] }>(
+          apiUrl,
+          async (url) => {
+            const res = await fetchWithRetry(url);
+            return res.json();
+          }
+        );
+
+        setPartners(json.data || []);
+      } catch (error) {
+        console.warn('Error fetching partners:', error);
+        setPartners([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadPartners();
+  }, []);
+
+  const displayPartners =
+    partners.length > 0 ? [...partners, ...partners, ...partners] : [];
 
   return (
     <section className="py-20 bg-gray-50/50 overflow-hidden relative">
       <div className="max-w-7xl mx-auto px-6">
         <h2 className="text-3xl font-bold text-[#1C2329] mb-12">OUR PARTNERS</h2>
 
-        {partners.length === 0 ? (
+        {loading ? (
+          <div className="text-center p-12 text-gray-400">
+            <span className="inline-block animate-spin border-4 border-gray-300 border-t-gray-600 rounded-full w-8 h-8 mb-4" />
+            <p>Loading partners…</p>
+          </div>
+        ) : partners.length === 0 ? (
           <div className="text-center p-8 text-gray-400 border border-gray-200 rounded-lg">
             No partners found or unable to connect to Strapi.
           </div>
@@ -83,7 +110,10 @@ export default async function PartnersSection() {
           <div className="relative flex overflow-x-hidden group">
             <div className="animate-marquee flex items-center gap-16 md:gap-24 whitespace-nowrap opacity-80 group-hover:opacity-100 transition-opacity duration-300">
               {displayPartners.map((partner, idx) => (
-                <div key={`${partner.id}-${idx}`} className="relative h-48 w-64 md:w-80 flex-shrink-0 transition-all duration-300">
+                <div
+                  key={`${partner.id}-${idx}`}
+                  className="relative h-48 w-64 md:w-80 flex-shrink-0 transition-all duration-300"
+                >
                   <Image
                     src={getImageUrl(partner.logo)}
                     alt={partner.name || `Partner ${idx}`}
