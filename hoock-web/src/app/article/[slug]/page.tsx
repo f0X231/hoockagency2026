@@ -1,6 +1,8 @@
 import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import BackToArticles from '@/components/article/BackToArticles'; 
+
 
 export const revalidate = 21600; // CDN/ISR revalidate ทุก 6 ชั่วโมง
 
@@ -47,12 +49,11 @@ const getImageUrl = (
   return 'https://picsum.photos/1200/600';
 };
 
-// ✅ แก้ไข: fetch ด้วย documentId โดยตรง — ไม่ต้อง fetch ทั้งหมดแล้วกรอง
 async function getArticle(slug: string): Promise<ArticleDetail | null> {
   try {
     const res = await fetch(
       `${STRAPI_URL}/api/articles?filters[documentId][$eq]=${slug}&populate=*&status=published`,
-      { next: { revalidate: 21600 } } // ✅ 6 ชั่วโมง
+      { next: { revalidate: 21600 } } 
     );
 
     if (!res.ok) {
@@ -77,7 +78,6 @@ const formatDate = (dateString: string) => {
   });
 };
 
-// ✅ generateMetadata — SEO: title, description, og:image, twitter card
 export async function generateMetadata({
   params,
 }: {
@@ -160,16 +160,7 @@ export default async function ArticlePage({
     <article className="min-h-screen bg-white pb-24 pt-32">
       <div className="max-w-7xl mx-auto px-6">
 
-        {/* Back Link */}
-        <Link
-          href="/#article"
-          className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-[#D9A384] mb-8 transition-colors uppercase tracking-widest"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 mr-2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-          </svg>
-          Back to Articles
-        </Link>
+        <BackToArticles />
 
         {/* Title */}
         <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-[#1C2329] leading-tight mb-4">

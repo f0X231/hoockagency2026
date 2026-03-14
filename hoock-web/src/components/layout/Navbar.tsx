@@ -16,9 +16,10 @@ export default function Navbar() {
   const hamburgerRef = useRef<HTMLDivElement>(null);
 
   return (
+    // ✅ absolute + top-0 + w-full ให้ navbar ลอยทับ banner
     <nav
-      style={{ position: "relative", zIndex: 20 }}
-      className="flex items-center justify-between max-w-7xl mx-auto px-6 py-8 w-full"
+      style={{ zIndex: 50 }}
+      className="absolute top-0 left-0 right-0 flex items-center justify-between max-w-7xl mx-auto px-6 py-8 w-full"
     >
       {/* ── LEFT: Desktop nav links / Mobile hamburger ── */}
       <div>
@@ -33,25 +34,24 @@ export default function Navbar() {
                 fontWeight: 500,
                 letterSpacing: "0.15em",
                 textTransform: "uppercase",
-                color: "#555",
+                color: "rgba(255,255,255,0.85)",
                 textDecoration: "none",
                 transition: "color 0.3s ease",
               }}
-              className="hover:!text-[#1a1a1a]"
+              className="hover:!text-white"
             >
               {label}
             </Link>
           ))}
         </div>
 
-        {/* Mobile — Hamburger with hover-expand */}
+        {/* Mobile — Hamburger */}
         <div
           ref={hamburgerRef}
           className="md:hidden relative"
           onMouseEnter={() => setMobileOpen(true)}
           onMouseLeave={() => setMobileOpen(false)}
         >
-          {/* Hamburger Icon */}
           <button
             aria-label="Menu"
             onClick={() => setMobileOpen((v) => !v)}
@@ -72,7 +72,7 @@ export default function Navbar() {
                   display: "block",
                   width: "24px",
                   height: "2px",
-                  backgroundColor: "#1a1a1a",
+                  backgroundColor: "#ffffff",
                   borderRadius: "2px",
                   transition: "transform 0.3s ease, opacity 0.3s ease",
                   transform:
@@ -87,7 +87,6 @@ export default function Navbar() {
             ))}
           </button>
 
-          {/* Dropdown menu */}
           <div
             style={{
               position: "absolute",
@@ -143,11 +142,12 @@ export default function Navbar() {
             height={45}
             className="object-contain"
             priority
+            style={{ filter: "brightness(0) invert(1)" }}
           />
         </Link>
       </div>
 
-      {/* ── RIGHT: Contact bubble icon ── */}
+      {/* ── RIGHT: Contact bubble ── */}
       <Link
         href="/contact"
         aria-label="Contact"
@@ -168,24 +168,19 @@ export default function Navbar() {
             style={{ width: "64px", height: "56px" }}
           >
             <rect
-              x="2"
-              y="2"
-              width="110"
-              height="55"
-              rx="8"
-              ry="8"
-              stroke="#2d3748"
+              x="2" y="2" width="110" height="55" rx="8" ry="8"
+              // ✅ เปลี่ยนเป็นสีขาวบน banner
+              stroke="rgba(255,255,255,0.85)"
               strokeWidth="2.5"
             />
             <path
               d="M18 62 L14 74 L26 66"
-              stroke="#2d3748"
+              stroke="rgba(255,255,255,0.85)"
               strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
           </svg>
-
           <span
             style={{
               position: "absolute",
@@ -197,7 +192,7 @@ export default function Navbar() {
               fontWeight: 700,
               letterSpacing: "0.12em",
               textTransform: "uppercase",
-              color: "#2d3748",
+              color: "white",
               opacity: contactHovered ? 1 : 0,
               transition: "opacity 0.25s ease",
               pointerEvents: "none",

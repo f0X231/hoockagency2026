@@ -6,7 +6,7 @@ import Image from 'next/image';
 const STRAPI_URL =
   process.env.NEXT_PUBLIC_URI_STRAPI || 'https://strong-art-a39006d263.strapiapp.com';
 
-const SLIDE_INTERVAL = 15000; // 15 วินาที
+const SLIDE_INTERVAL = 15000;
 
 interface CoverFormat {
   url: string;
@@ -38,7 +38,6 @@ interface BannerItem {
 
 const getImageUrl = (cover: Cover | null): string => {
   if (!cover) return 'https://picsum.photos/1440/892';
-  // ใช้ large format ถ้ามี ไม่งั้นใช้ original
   const url = cover.formats?.large?.url ?? cover.url;
   return url.startsWith('http') ? url : `${STRAPI_URL}${url}`;
 };
@@ -50,7 +49,6 @@ export default function BannerSection() {
   const [transitioning, setTransitioning] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // fetch
   useEffect(() => {
     fetch('/api/banner')
       .then((r) => r.ok ? r.json() : { data: [] })
@@ -62,23 +60,21 @@ export default function BannerSection() {
       .finally(() => setLoading(false));
   }, []);
 
-  // slide transition helper
   const goTo = useCallback((index: number) => {
     setTransitioning(true);
     setTimeout(() => {
       setCurrent(index);
       setTransitioning(false);
-    }, 600); // fade duration
+    }, 600);
   }, []);
 
-  // auto-advance
   const startTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
       setCurrent((prev) => {
         const next = (prev + 1) % banners.length;
         goTo(next);
-        return prev; // goTo handles the actual update
+        return prev;
       });
     }, SLIDE_INTERVAL);
   }, [banners.length, goTo]);
@@ -98,13 +94,12 @@ export default function BannerSection() {
     startTimer();
   };
 
-  // hide section when no data
   if (loading || banners.length === 0) return null;
 
   const banner = banners[current];
 
   return (
-    <section className="relative w-full h-screen min-h-[500px] max-h-[900px] overflow-hidden bg-black">
+    <section className="relative w-full h-screen min-h-[600px] overflow-hidden bg-black">
 
       {/* ── Cover Image ── */}
       <div
@@ -120,31 +115,60 @@ export default function BannerSection() {
           priority
           sizes="100vw"
         />
-        {/* gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
+        {/* subtle dark overlay */}
+        <div className="absolute inset-0 bg-black/25" />
       </div>
 
-      {/* ── Text Content ── */}
       <div
-        className="absolute bottom-0 left-0 right-0 px-6 pb-16 max-w-7xl mx-auto transition-all duration-700 ease-in-out"
+        className="absolute inset-0 flex items-center"
         style={{
           opacity: transitioning ? 0 : 1,
-          transform: transitioning ? 'translateY(12px)' : 'translateY(0)',
+          transform: transitioning ? 'translateY(10px)' : 'translateY(0)',
+          transition: 'opacity 0.7s ease, transform 0.7s ease',
         }}
       >
-        <h1 className="text-white text-3xl md:text-5xl font-bold leading-tight mb-4 drop-shadow-lg max-w-2xl">
-          {banner.title}
-        </h1>
-        {banner.description && (
-          <p className="text-white/80 text-sm md:text-base leading-relaxed max-w-xl drop-shadow">
-            {banner.description}
-          </p>
-        )}
+        <div className="w-full max-w-7xl mx-auto px-6 md:px-12">
+          <div
+            style={{
+              display: 'inline-block',
+              backgroundColor: 'rgba(0, 0, 0, 0.4)',
+              borderRadius: '12px',
+              padding: '32px 40px',
+              maxWidth: '560px',
+              marginLeft: '2rem',
+            }}
+          >
+            <h1
+              style={{
+                color: '#ffffff',
+                fontSize: 'clamp(1.5rem, 3vw, 2.75rem)',
+                fontWeight: 700,
+                lineHeight: 1.25,
+                marginBottom: '16px',
+                textShadow: '0 2px 8px rgba(0,0,0,0.3)',
+              }}
+            >
+              {banner.title}
+            </h1>
+            {banner.description && (
+              <p
+                style={{
+                  color: 'rgba(255,255,255,0.85)',
+                  fontSize: 'clamp(0.875rem, 1.2vw, 1rem)',
+                  lineHeight: 1.7,
+                  margin: 0,
+                }}
+              >
+                {banner.description}
+              </p>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* ── Dot Indicators (แสดงเฉพาะเมื่อมีมากกว่า 1 slide) ── */}
+      {/* ── Dot Indicators ── */}
       {banners.length > 1 && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10">
           {banners.map((_, idx) => (
             <button
               key={idx}
