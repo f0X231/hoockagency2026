@@ -6,3 +6,9 @@ main = ".open-next/worker.js"
 
 [assets]
 directory = ".open-next/assets"
+binding = "ASSETS"
+
+[vars]
+URI_STRAPI = "https://strong-art-a39006d263.strapiapp.com"
+NEXT_PUBLIC_URI_STRAPI = "https://strong-art-a39006d263.strapiapp.com"
+NEXT_PUBLIC_SITE_URL = "https://hoock-agency.supphagorn-s.workers.dev"
