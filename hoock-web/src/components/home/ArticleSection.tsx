@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { cachedFetch } from '@/lib/cache';
 
 interface StrapiImage {
   id: number;
@@ -38,8 +37,8 @@ const getImageUrl = (imageProp: any): string => {
       ? imageProp.url
       : `${STRAPI_URL}${imageProp.url}`;
   }
-  if (imageProp.data?.attributes?.url) {
-    const url = imageProp.data.attributes.url;
+  if ((imageProp as any).data?.attributes?.url) {
+    const url = (imageProp as any).data.attributes.url;
     return url.startsWith('http') ? url : `${STRAPI_URL}${url}`;
   }
   return 'https://picsum.photos/400/300';
@@ -53,6 +52,9 @@ const formatDate = (dateString: string) => {
     day: 'numeric',
   });
 };
+
+const getArticleSlug = (article: ArticleItem): string =>
+  article.documentId ?? article.id.toString();
 
 async function fetchWithRetry(url: string, retries = 3, timeoutMs = 20000): Promise<Response> {
   for (let attempt = 0; attempt < retries; attempt++) {
@@ -81,7 +83,7 @@ export default function ArticleSection() {
   const [articles, setArticles] = useState<ArticleItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [startIndex, setStartIndex] = useState(0);
 
@@ -90,15 +92,8 @@ export default function ArticleSection() {
       isLoadMore ? setLoadingMore(true) : setLoading(true);
       setError(null);
 
-      const apiUrl = `/api/articles?start=${currentStart}&limit=${LIMIT}`;
-
-      const json = await cachedFetch<{ data: ArticleItem[]; meta: { pagination: { total: number } } }>(
-        apiUrl,
-        async (url) => {
-          const res = await fetchWithRetry(url);
-          return res.json();
-        }
-      );
+      const res = await fetchWithRetry(`/api/articles?start=${currentStart}&limit=${LIMIT}`);
+      const json = await res.json();
 
       const newArticles: ArticleItem[] = json.data || [];
       const total: number = json.meta?.pagination?.total ?? 0;
@@ -130,17 +125,14 @@ export default function ArticleSection() {
     fetchArticles(next, true);
   };
 
+  if (loading || (!error && articles.length === 0)) return null;
+
   return (
     <section id="article" className="py-20 bg-[#54626F] text-white">
       <div className="max-w-7xl mx-auto px-6">
         <h2 className="text-3xl font-bold mb-12">ARTICLE</h2>
 
-        {loading && articles.length === 0 ? (
-          <div className="text-center p-12 text-gray-300">
-            <span className="inline-block animate-spin border-4 border-gray-400 border-t-white rounded-full w-8 h-8 mb-4" />
-            <p>Loading articles…</p>
-          </div>
-        ) : error ? (
+        {error ? (
           <div className="text-center p-12 bg-white/5 rounded-lg border border-white/10">
             <p className="text-red-300 mb-4">{error}</p>
             <button
@@ -150,21 +142,15 @@ export default function ArticleSection() {
               Retry
             </button>
           </div>
-        ) : articles.length === 0 ? (
-          <div className="text-center p-12 bg-white/5 rounded-lg border border-white/10">
-            <p>No articles found.</p>
-          </div>
         ) : (
           <div className="space-y-6">
             {articles.map((article) => {
               const imageUrl = getImageUrl(article.thumbnail ?? article.image);
-              const titleSlug = article.title
-                ? article.title.trim().toLowerCase().replace(/\s+/g, '-')
-                : article.documentId ?? article.id?.toString();
 
               return (
                 <Link
-                  href={`/article/${titleSlug}`}
+                  // ✅ แก้ไข: ใช้ documentId แทน title slug — ทุก article จะมี link เฉพาะตัว
+                  href={`/article/${getArticleSlug(article)}`}
                   key={`article-${article.id}`}
                   className="group bg-white/10 p-6 rounded-lg backdrop-blur-sm flex flex-col md:flex-row gap-6 hover:bg-white/20 transition-all cursor-pointer block border border-transparent hover:border-white/10"
                 >

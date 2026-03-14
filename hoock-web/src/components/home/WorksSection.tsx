@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { cachedFetch } from '@/lib/cache';
 
 interface StrapiImage {
   id: number;
@@ -35,8 +34,8 @@ const getImageUrl = (imageProp: any): string => {
   if ('url' in imageProp && imageProp.url) {
     return imageProp.url.startsWith('http') ? imageProp.url : `${STRAPI_URL}${imageProp.url}`;
   }
-  if (imageProp.data?.attributes?.url) {
-    const url = imageProp.data.attributes.url;
+  if ((imageProp as any).data?.attributes?.url) {
+    const url = (imageProp as any).data.attributes.url;
     return url.startsWith('http') ? url : `${STRAPI_URL}${url}`;
   }
   return 'https://picsum.photos/400/300';
@@ -93,7 +92,7 @@ export default function WorksSection() {
   const [works, setWorks] = useState<WorkItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [startIndex, setStartIndex] = useState(0);
 
@@ -102,15 +101,8 @@ export default function WorksSection() {
       isLoadMore ? setLoadingMore(true) : setLoading(true);
       setError(null);
 
-      const apiUrl = `/api/works?start=${currentStart}&limit=${LIMIT}`;
-
-      const json = await cachedFetch<{ data: WorkItem[]; meta: { pagination: { total: number } } }>(
-        apiUrl,
-        async (url) => {
-          const res = await fetchWithRetry(url);
-          return res.json();
-        }
-      );
+      const res = await fetchWithRetry(`/api/works?start=${currentStart}&limit=${LIMIT}`);
+      const json = await res.json();
 
       const newWorks: WorkItem[] = json.data || [];
       const total: number = json.meta?.pagination?.total ?? 0;
@@ -142,6 +134,9 @@ export default function WorksSection() {
     fetchWorks(next, true);
   };
 
+  // Hide entire section while initial loading or when no data and no error
+  if (loading || (!error && works.length === 0)) return null;
+
   const chunkedWorks: WorkItem[][] = [];
   for (let i = 0; i < works.length; i += 5) {
     chunkedWorks.push(works.slice(i, i + 5));
@@ -157,12 +152,7 @@ export default function WorksSection() {
         </div>
       </div>
 
-      {loading && works.length === 0 ? (
-        <div className="text-center p-12 text-gray-400">
-          <span className="inline-block animate-spin border-4 border-gray-300 border-t-black rounded-full w-8 h-8 mb-4" />
-          <p>Loading works…</p>
-        </div>
-      ) : error ? (
+      {error ? (
         <div className="text-center p-12 bg-gray-50 border border-gray-200 rounded-lg text-gray-500">
           <p className="text-red-500 mb-4">{error}</p>
           <button
@@ -172,34 +162,26 @@ export default function WorksSection() {
             Retry
           </button>
         </div>
-      ) : works.length === 0 ? (
-        <div className="text-center p-12 bg-gray-50 border border-gray-200 rounded-lg text-gray-500">
-          No works found.
-        </div>
       ) : (
         <div className="space-y-16">
           {chunkedWorks.map((chunk, chunkIndex) => (
             <div key={`chunk-${chunkIndex}`} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
               {/* Column 1 — items 0 & 3 */}
               <div className="flex flex-col gap-6">
                 {chunk[0] && <div className="relative h-64"><WorkCard work={chunk[0]} /></div>}
                 {chunk[3] && <div className="relative h-64"><WorkCard work={chunk[3]} /></div>}
               </div>
-
               {/* Column 2 — tall center item 1 */}
               {chunk[1] && (
                 <div className="relative h-[536px]">
                   <WorkCard work={chunk[1]} />
                 </div>
               )}
-
               {/* Column 3 — items 2 & 4 */}
               <div className="flex flex-col gap-6">
                 {chunk[2] && <div className="relative h-64"><WorkCard work={chunk[2]} /></div>}
                 {chunk[4] && <div className="relative h-64"><WorkCard work={chunk[4]} /></div>}
               </div>
-
             </div>
           ))}
         </div>

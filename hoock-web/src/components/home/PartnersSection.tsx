@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { cachedFetch } from '@/lib/cache';
 
 interface StrapiImage {
   id: number;
@@ -65,18 +64,9 @@ export default function PartnersSection() {
   useEffect(() => {
     async function loadPartners() {
       try {
-        // Partners fetch ตรงไป Strapi (ไม่ผ่าน Next.js API route)
-        // ใช้ NEXT_PUBLIC_URI_STRAPI เพราะรันฝั่ง client
-        const apiUrl = `${STRAPI_URL}/api/partners?populate=*&status=published`;
-
-        const json = await cachedFetch<{ data: PartnerItem[] }>(
-          apiUrl,
-          async (url) => {
-            const res = await fetchWithRetry(url);
-            return res.json();
-          }
-        );
-
+        // ✅ เรียกผ่าน Next.js API route แทน Strapi โดยตรง
+        const res = await fetchWithRetry('/api/partners');
+        const json = await res.json();
         setPartners(json.data || []);
       } catch (error) {
         console.warn('Error fetching partners:', error);
@@ -89,42 +79,33 @@ export default function PartnersSection() {
     loadPartners();
   }, []);
 
-  const displayPartners =
-    partners.length > 0 ? [...partners, ...partners, ...partners] : [];
+  // ✅ Hide section ระหว่าง loading และเมื่อไม่มีข้อมูล
+  if (loading || partners.length === 0) return null;
+
+  const displayPartners = [...partners, ...partners, ...partners];
 
   return (
     <section className="py-20 bg-gray-50/50 overflow-hidden relative">
       <div className="max-w-7xl mx-auto px-6">
         <h2 className="text-3xl font-bold text-[#1C2329] mb-12">OUR PARTNERS</h2>
 
-        {loading ? (
-          <div className="text-center p-12 text-gray-400">
-            <span className="inline-block animate-spin border-4 border-gray-300 border-t-gray-600 rounded-full w-8 h-8 mb-4" />
-            <p>Loading partners…</p>
+        <div className="relative flex overflow-x-hidden group">
+          <div className="animate-marquee flex items-center gap-16 md:gap-24 whitespace-nowrap opacity-80 group-hover:opacity-100 transition-opacity duration-300">
+            {displayPartners.map((partner, idx) => (
+              <div
+                key={`${partner.id}-${idx}`}
+                className="relative h-48 w-64 md:w-80 flex-shrink-0 transition-all duration-300"
+              >
+                <Image
+                  src={getImageUrl(partner.logo)}
+                  alt={partner.name || `Partner ${idx}`}
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            ))}
           </div>
-        ) : partners.length === 0 ? (
-          <div className="text-center p-8 text-gray-400 border border-gray-200 rounded-lg">
-            No partners found or unable to connect to Strapi.
-          </div>
-        ) : (
-          <div className="relative flex overflow-x-hidden group">
-            <div className="animate-marquee flex items-center gap-16 md:gap-24 whitespace-nowrap opacity-80 group-hover:opacity-100 transition-opacity duration-300">
-              {displayPartners.map((partner, idx) => (
-                <div
-                  key={`${partner.id}-${idx}`}
-                  className="relative h-48 w-64 md:w-80 flex-shrink-0 transition-all duration-300"
-                >
-                  <Image
-                    src={getImageUrl(partner.logo)}
-                    alt={partner.name || `Partner ${idx}`}
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        </div>
       </div>
 
       <style>{`

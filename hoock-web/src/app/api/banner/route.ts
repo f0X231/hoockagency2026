@@ -5,8 +5,8 @@ const STRAPI_URL = process.env.URI_STRAPI || 'https://strong-art-a39006d263.stra
 export async function GET() {
   try {
     const res = await fetch(
-      `${STRAPI_URL}/api/services?populate=*&status=published`,
-      { next: { revalidate: 7200 } } // ISR: revalidate every 2 hours
+      `${STRAPI_URL}/api/banners?populate=*&status=published`,
+      { next: { revalidate: 7200 } }
     );
     if (!res.ok) return NextResponse.json({ data: [] }, { status: res.status });
 
@@ -14,7 +14,6 @@ export async function GET() {
 
     return NextResponse.json(data, {
       headers: {
-        // CDN caches for 2 hours; stale content served up to 10 min while revalidating
         'Cache-Control': 'public, s-maxage=7200, stale-while-revalidate=600',
       },
     });

@@ -10,11 +10,17 @@ export async function GET(req: NextRequest) {
   try {
     const res = await fetch(
       `${STRAPI_URL}/api/works?populate=*&status=published&sort=updatedAt:desc&pagination[start]=${start}&pagination[limit]=${limit}`,
-      { next: { revalidate: 60 } }
+      { next: { revalidate: 7200 } } // ISR: revalidate every 2 hours
     );
     if (!res.ok) return NextResponse.json({ data: [], meta: {} }, { status: res.status });
+
     const data = await res.json();
-    return NextResponse.json(data);
+
+    return NextResponse.json(data, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=7200, stale-while-revalidate=600',
+      },
+    });
   } catch {
     return NextResponse.json({ data: [], meta: {} }, { status: 503 });
   }

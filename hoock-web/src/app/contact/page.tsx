@@ -14,10 +14,10 @@ const socialLinks = [
   { name: "LinkedIn", icon: "in", href: "#" },
 ];
 
-// Extend window type for reCAPTCHA
 declare global {
   interface Window {
     grecaptcha: any;
+    onRecaptchaLoad: () => void;
   }
 }
 
@@ -27,6 +27,7 @@ export default function ContactPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [captchaReady, setCaptchaReady] = useState(false);
   const captchaRef = useRef<string | null>(null);
   const widgetRef = useRef<number | null>(null);
 
@@ -34,23 +35,65 @@ export default function ContactPage() {
     const newErrors: Record<string, string> = {};
     if (!form.name.trim()) newErrors.name = "Name is required.";
     if (!form.email.trim()) newErrors.email = "Email is required.";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = "Invalid email address.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+      newErrors.email = "Invalid email address.";
     if (!form.phone.trim()) newErrors.phone = "Phone is required.";
-    else if (!/^[0-9+\-\s()]{7,15}$/.test(form.phone)) newErrors.phone = "Invalid phone number.";
+    else if (!/^[0-9+\-\s()]{7,15}$/.test(form.phone))
+      newErrors.phone = "Invalid phone number.";
     if (!form.message.trim()) newErrors.message = "Message is required.";
     if (!privacy) newErrors.privacy = "You must accept the privacy policy.";
     if (!captchaRef.current) newErrors.captcha = "Please complete the CAPTCHA.";
     return newErrors;
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
+  // ── render reCAPTCHA widget เมื่อ script โหลดเสร็จ ──
+  const onCaptchaLoad = useCallback(() => {
+    if (!window.grecaptcha?.render) return;
+
+    // ป้องกัน render ซ้ำ
+    if (widgetRef.current !== null) return;
+
+    try {
+      widgetRef.current = window.grecaptcha.render("recaptcha-container", {
+        sitekey: process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY,
+        callback: (token: string) => {
+          captchaRef.current = token;
+          setCaptchaReady(true);
+          setErrors((prev) => ({ ...prev, captcha: "" }));
+        },
+        "expired-callback": () => {
+          captchaRef.current = null;
+          setCaptchaReady(false);
+        },
+        "error-callback": () => {
+          captchaRef.current = null;
+          setCaptchaReady(false);
+        },
+      });
+    } catch (err) {
+      console.error("reCAPTCHA render error:", err);
+    }
+  }, []);
+
+  const resetCaptcha = () => {
+    captchaRef.current = null;
+    setCaptchaReady(false);
+    if (widgetRef.current !== null) {
+      window.grecaptcha?.reset(widgetRef.current);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
@@ -68,32 +111,26 @@ export default function ContactPage() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Something went wrong.");
+
+      if (!res.ok) {
+        // ── บันทึกไม่สำเร็จหลัง retry ครบ 3 รอบ ──
+        const msg = data.error || "บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง";
+        setStatus("error");
+        setErrorMsg(msg);
+        resetCaptcha(); // reset captcha ให้ user กรอกใหม่
+        return;
+      }
 
       setStatus("success");
       setForm({ name: "", email: "", phone: "", message: "" });
       setPrivacy(false);
-      captchaRef.current = null;
-      if (widgetRef.current !== null) window.grecaptcha?.reset(widgetRef.current);
+      resetCaptcha();
     } catch (err: any) {
       setStatus("error");
-      setErrorMsg(err.message || "Failed to send. Please try again.");
+      setErrorMsg("ไม่สามารถเชื่อมต่อได้ กรุณาตรวจสอบการเชื่อมต่อและลองใหม่");
+      resetCaptcha();
     }
   };
-
-  const onCaptchaLoad = useCallback(() => {
-    if (!window.grecaptcha) return;
-    widgetRef.current = window.grecaptcha.render("recaptcha-container", {
-      sitekey: process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY,
-      callback: (token: string) => {
-        captchaRef.current = token;
-        setErrors((prev) => ({ ...prev, captcha: "" }));
-      },
-      "expired-callback": () => {
-        captchaRef.current = null;
-      },
-    });
-  }, []);
 
   return (
     <>
@@ -111,7 +148,8 @@ export default function ContactPage() {
             <div>
               <h2 className={styles.companyName}>HOOCK Agency Co., Ltd.</h2>
               <p className={styles.address}>
-                8/71 Soi Nong Rahaeng 4 Yeak 3, Sam Wa Tawan<br />
+                8/71 Soi Nong Rahaeng 4 Yeak 3, Sam Wa Tawan
+                <br />
                 Tok, Subdistrict, Khlong Sam Wa, Bangkok 10510
               </p>
             </div>
@@ -121,7 +159,12 @@ export default function ContactPage() {
             </div>
             <div className={styles.socialLinks}>
               {socialLinks.map((social) => (
-                <a key={social.name} href={social.href} className={styles.socialIcon} aria-label={social.name}>
+                <a
+                  key={social.name}
+                  href={social.href}
+                  className={styles.socialIcon}
+                  aria-label={social.name}
+                >
                   {social.icon}
                 </a>
               ))}
@@ -134,8 +177,11 @@ export default function ContactPage() {
 
             {status === "success" ? (
               <div className={styles.successMessage}>
-                <p>✅ ส่งข้อมูลเรียบร้อยแล้ว เราจะติดต่อกลับโดยเร็วที่สุด</p>
-                <button className={styles.submitButton} onClick={() => setStatus("idle")}>
+                <p>ส่งข้อมูลเรียบร้อยแล้ว เราจะติดต่อกลับโดยเร็วที่สุด</p>
+                <button
+                  className={styles.submitButton}
+                  onClick={() => setStatus("idle")}
+                >
                   ส่งอีกครั้ง
                 </button>
               </div>
@@ -151,7 +197,9 @@ export default function ContactPage() {
                     value={form.name}
                     onChange={handleChange}
                   />
-                  {errors.name && <span className={styles.errorText}>{errors.name}</span>}
+                  {errors.name && (
+                    <span className={styles.errorText}>{errors.name}</span>
+                  )}
                 </div>
 
                 {/* Email */}
@@ -164,7 +212,9 @@ export default function ContactPage() {
                     value={form.email}
                     onChange={handleChange}
                   />
-                  {errors.email && <span className={styles.errorText}>{errors.email}</span>}
+                  {errors.email && (
+                    <span className={styles.errorText}>{errors.email}</span>
+                  )}
                 </div>
 
                 {/* Phone */}
@@ -177,7 +227,9 @@ export default function ContactPage() {
                     value={form.phone}
                     onChange={handleChange}
                   />
-                  {errors.phone && <span className={styles.errorText}>{errors.phone}</span>}
+                  {errors.phone && (
+                    <span className={styles.errorText}>{errors.phone}</span>
+                  )}
                 </div>
 
                 {/* Message */}
@@ -189,13 +241,23 @@ export default function ContactPage() {
                     value={form.message}
                     onChange={handleChange}
                   />
-                  {errors.message && <span className={styles.errorText}>{errors.message}</span>}
+                  {errors.message && (
+                    <span className={styles.errorText}>{errors.message}</span>
+                  )}
                 </div>
 
                 {/* reCAPTCHA */}
                 <div className={styles.formGroup}>
                   <div id="recaptcha-container" />
-                  {errors.captcha && <span className={styles.errorText}>{errors.captcha}</span>}
+                  {/* แสดง status captcha */}
+                  {captchaReady && (
+                    <span style={{ fontSize: "0.75rem", color: "#16a34a", marginTop: "4px", display: "block" }}>
+                      ✓ CAPTCHA verified
+                    </span>
+                  )}
+                  {errors.captcha && (
+                    <span className={styles.errorText}>{errors.captcha}</span>
+                  )}
                 </div>
 
                 {/* Privacy */}
@@ -207,21 +269,39 @@ export default function ContactPage() {
                     checked={privacy}
                     onChange={(e) => {
                       setPrivacy(e.target.checked);
-                      if (errors.privacy) setErrors((prev) => ({ ...prev, privacy: "" }));
+                      if (errors.privacy)
+                        setErrors((prev) => ({ ...prev, privacy: "" }));
                     }}
                   />
                   <label htmlFor="privacy" className={styles.checkboxLabel}>
                     You have read the{" "}
                     <Link href="/privacy-policy" className={styles.privacyLink}>
                       privacy policy
-                    </Link>.
+                    </Link>
+                    .
                   </label>
                 </div>
-                {errors.privacy && <span className={styles.errorText}>{errors.privacy}</span>}
+                {errors.privacy && (
+                  <span className={styles.errorText}>{errors.privacy}</span>
+                )}
 
-                {/* Submit error */}
-                {status === "error" && (
-                  <p className={styles.errorText}>{errorMsg}</p>
+                {/* ── Error alert เมื่อบันทึกไม่สำเร็จ ── */}
+                {status === "error" && errorMsg && (
+                  <div
+                    role="alert"
+                    style={{
+                      padding: "12px 16px",
+                      borderRadius: "8px",
+                      backgroundColor: "#fef2f2",
+                      border: "1px solid #fca5a5",
+                      color: "#dc2626",
+                      fontSize: "0.875rem",
+                      lineHeight: 1.5,
+                      marginBottom: "8px",
+                    }}
+                  >
+                    ⚠️ {errorMsg}
+                  </div>
                 )}
 
                 <button
@@ -229,13 +309,36 @@ export default function ContactPage() {
                   className={styles.submitButton}
                   disabled={status === "loading"}
                 >
-                  {status === "loading" ? "Sending..." : "SEND"}
+                  {status === "loading" ? (
+                    <span style={{ display: "flex", alignItems: "center", gap: "8px", justifyContent: "center" }}>
+                      <span
+                        style={{
+                          display: "inline-block",
+                          width: "14px",
+                          height: "14px",
+                          border: "2px solid currentColor",
+                          borderTopColor: "transparent",
+                          borderRadius: "50%",
+                          animation: "spin 0.7s linear infinite",
+                        }}
+                      />
+                      กำลังส่ง...
+                    </span>
+                  ) : (
+                    "SEND"
+                  )}
                 </button>
               </form>
             )}
           </div>
         </div>
       </div>
+
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </>
   );
 }
