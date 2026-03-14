@@ -4,6 +4,12 @@ export const runtime = 'edge';
 
 const STRAPI_URL = process.env.URI_STRAPI || 'https://strong-art-a39006d263.strapiapp.com';
 
+function createTimeoutSignal(ms: number): AbortSignal {
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), ms);
+  return controller.signal;
+}
+
 async function postToStrapiWithRetry(
   payload: object,
   maxAttempts = 3
@@ -14,11 +20,9 @@ async function postToStrapiWithRetry(
     try {
       const res = await fetch(`${STRAPI_URL}/api/contact-submissions`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ data: payload }),
-        signal: AbortSignal.timeout(10000),
+        signal: createTimeoutSignal(10000),
       });
 
       const body = await res.json().catch(() => ({}));
@@ -27,10 +31,7 @@ async function postToStrapiWithRetry(
       lastError = { status: res.status, body };
     } catch (err) {
       lastError = err;
-    }
-
-    if (attempt < maxAttempts) {
-      await new Promise((r) => setTimeout(r, 1000 * attempt));
+      console.error(`Strapi attempt ${attempt} failed:`, err);
     }
   }
 
@@ -38,36 +39,36 @@ async function postToStrapiWithRetry(
 }
 
 export async function POST(req: NextRequest) {
-  // ✅ อ่าน env — ทำงานได้ทั้ง Node.js และ Cloudflare edge runtime
   const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET_KEY ?? '';
 
-  // ── debug log ชั่วคราว (ลบออกหลังแก้ได้) ──
-  console.log('ENV CHECK:', {
-    hasSecret: !!RECAPTCHA_SECRET,
-    secretLength: RECAPTCHA_SECRET.length,
-    hasStrapiUrl: !!process.env.URI_STRAPI,
-  });
-
   if (!RECAPTCHA_SECRET) {
+    console.error('RECAPTCHA_SECRET_KEY is not set');
     return NextResponse.json(
-      { error: 'Server misconfiguration: RECAPTCHA_SECRET_KEY is not set.' },
+      { error: 'Server misconfiguration.' },
       { status: 500 }
     );
   }
 
+  let body: any;
   try {
-    const body = await req.json();
-    const { name, email, phone, message, captchaToken } = body;
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 });
+  }
 
-    if (!name?.trim() || !email?.trim() || !phone?.trim() || !message?.trim()) {
-      return NextResponse.json({ error: 'All fields are required.' }, { status: 400 });
-    }
+  const { name, email, phone, message, captchaToken } = body;
 
-    if (!captchaToken) {
-      return NextResponse.json({ error: 'CAPTCHA token is missing.' }, { status: 400 });
-    }
+  // ── Validate fields ──
+  if (!name?.trim() || !email?.trim() || !phone?.trim() || !message?.trim()) {
+    return NextResponse.json({ error: 'All fields are required.' }, { status: 400 });
+  }
 
-    // ── Verify reCAPTCHA ──
+  if (!captchaToken) {
+    return NextResponse.json({ error: 'CAPTCHA token is missing.' }, { status: 400 });
+  }
+
+  // ── Verify reCAPTCHA ──
+  try {
     const captchaRes = await fetch('https://www.google.com/recaptcha/api/siteverify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -75,6 +76,7 @@ export async function POST(req: NextRequest) {
         secret: RECAPTCHA_SECRET,
         response: captchaToken,
       }).toString(),
+      signal: createTimeoutSignal(8000),
     });
 
     const captchaData = await captchaRes.json();
@@ -86,21 +88,24 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-
-    // ── Save to Strapi ──
-    const result = await postToStrapiWithRetry({ name, email, phone, message }, 3);
-
-    if (!result.ok) {
-      console.error('Strapi save failed:', result.body);
-      return NextResponse.json(
-        { error: 'บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง' },
-        { status: 503 }
-      );
-    }
-
-    return NextResponse.json({ success: true });
   } catch (err) {
-    console.error('Contact API error:', err);
-    return NextResponse.json({ error: 'Server error.' }, { status: 500 });
+    console.error('reCAPTCHA verify error:', err);
+    return NextResponse.json(
+      { error: 'CAPTCHA verification error. Please try again.' },
+      { status: 500 }
+    );
   }
+
+  // ── Save to Strapi ──
+  const result = await postToStrapiWithRetry({ name, email, phone, message }, 3);
+
+  if (!result.ok) {
+    console.error('Strapi save failed:', result.body);
+    return NextResponse.json(
+      { error: 'บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง' },
+      { status: 503 }
+    );
+  }
+
+  return NextResponse.json({ success: true });
 }
