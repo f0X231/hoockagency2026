@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import styles from "./contact.module.css";
 
@@ -13,58 +13,12 @@ const socialLinks = [
   { name: "LinkedIn", icon: "in", href: "#" },
 ];
 
-declare global {
-  interface Window {
-    grecaptcha: any;
-  }
-}
-
-const SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ?? "";
-
 export default function ContactPage() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
   const [privacy, setPrivacy] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
-  const [captchaReady, setCaptchaReady] = useState(false);
-  const captchaTokenRef = useRef<string | null>(null);
-  const widgetIdRef = useRef<number | null>(null);
-
-  const renderWidget = useCallback(() => {
-    if (!SITE_KEY) { console.error("❌ NEXT_PUBLIC_RECAPTCHA_SITE_KEY is missing"); return; }
-    if (!window.grecaptcha?.render) { console.warn("grecaptcha.render not ready yet"); return; }
-    if (widgetIdRef.current !== null) return;
-    const container = document.getElementById("recaptcha-container");
-    if (!container) { console.warn("recaptcha-container not found"); return; }
-    try {
-      widgetIdRef.current = window.grecaptcha.render(container, {
-        sitekey: SITE_KEY,
-        callback: (token: string) => { captchaTokenRef.current = token; setCaptchaReady(true); setErrors((prev) => ({ ...prev, captcha: "" })); },
-        "expired-callback": () => { captchaTokenRef.current = null; setCaptchaReady(false); },
-        "error-callback": () => { captchaTokenRef.current = null; setCaptchaReady(false); },
-      });
-    } catch (err) { console.error("reCAPTCHA render error:", err); }
-  }, []);
-
-  useEffect(() => {
-    if (!SITE_KEY) { console.error("❌ NEXT_PUBLIC_RECAPTCHA_SITE_KEY is not set in .env.local"); return; }
-    if (window.grecaptcha?.render) { window.grecaptcha.ready(renderWidget); return; }
-    const script = document.createElement("script");
-    script.src = "https://www.google.com/recaptcha/api.js?render=explicit";
-    script.async = true;
-    script.defer = true;
-    script.onload = () => window.grecaptcha.ready(renderWidget);
-    script.onerror = () => console.error("❌ Failed to load reCAPTCHA script");
-    document.head.appendChild(script);
-    return () => { widgetIdRef.current = null; };
-  }, [renderWidget]);
-
-  const resetCaptcha = useCallback(() => {
-    captchaTokenRef.current = null;
-    setCaptchaReady(false);
-    if (widgetIdRef.current !== null && window.grecaptcha?.reset) window.grecaptcha.reset(widgetIdRef.current);
-  }, []);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -75,7 +29,6 @@ export default function ContactPage() {
     else if (!/^[0-9+\-\s()]{7,15}$/.test(form.phone)) newErrors.phone = "Invalid phone number.";
     if (!form.message.trim()) newErrors.message = "Message is required.";
     if (!privacy) newErrors.privacy = "You must accept the privacy policy.";
-    if (!captchaTokenRef.current) newErrors.captcha = "Please complete the CAPTCHA.";
     return newErrors;
   };
 
@@ -95,18 +48,20 @@ export default function ContactPage() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, captchaToken: captchaTokenRef.current }),
+        body: JSON.stringify(form),
       });
       const data = await res.json();
-      if (!res.ok) { setStatus("error"); setErrorMsg(data.error || "บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง"); resetCaptcha(); return; }
+      if (!res.ok) {
+        setStatus("error");
+        setErrorMsg(data.error || "บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+        return;
+      }
       setStatus("success");
       setForm({ name: "", email: "", phone: "", message: "" });
       setPrivacy(false);
-      resetCaptcha();
     } catch {
       setStatus("error");
       setErrorMsg("ไม่สามารถเชื่อมต่อได้ กรุณาตรวจสอบการเชื่อมต่อและลองใหม่");
-      resetCaptcha();
     }
   };
 
@@ -144,10 +99,7 @@ export default function ContactPage() {
           {status === "success" ? (
             <div className={styles.successMessage}>
               <p>ส่งข้อมูลเรียบร้อยแล้ว เราจะติดต่อกลับโดยเร็วที่สุด</p>
-              <button
-                className={styles.submitButton}
-                onClick={() => { setStatus("idle"); widgetIdRef.current = null; }}
-              >
+              <button className={styles.submitButton} onClick={() => setStatus("idle")}>
                 ส่งอีกครั้ง
               </button>
             </div>
@@ -179,21 +131,6 @@ export default function ContactPage() {
                   className={`${styles.textarea} ${errors.message ? styles.inputError : ""}`}
                   value={form.message} onChange={handleChange} />
                 {errors.message && <span className={styles.errorText}>{errors.message}</span>}
-              </div>
-
-              <div className={styles.formGroup}>
-                <div id="recaptcha-container" />
-                {!SITE_KEY && (
-                  <p style={{ fontSize: "0.75rem", color: "#dc2626", marginTop: "6px" }}>
-                    ⚠️ NEXT_PUBLIC_RECAPTCHA_SITE_KEY ยังไม่ได้ตั้งค่าใน .env.local
-                  </p>
-                )}
-                {captchaReady && (
-                  <span style={{ fontSize: "0.75rem", color: "#16a34a", marginTop: "4px", display: "block" }}>
-                    ✓ CAPTCHA verified
-                  </span>
-                )}
-                {errors.captcha && <span className={styles.errorText}>{errors.captcha}</span>}
               </div>
 
               <div className={styles.checkboxGroup}>
