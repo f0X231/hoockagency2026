@@ -40,6 +40,7 @@ const getImageUrl = (imageProp: any): string => {
 export default function ServicesSection() {
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const fetchServices = useCallback(async () => {
     try {
@@ -59,20 +60,20 @@ export default function ServicesSection() {
     fetchServices();
   }, [fetchServices]);
 
-  // Hide entire section while loading or when no data
   if (loading || services.length === 0) return null;
 
   return (
     <section id="services" className="py-20 max-w-7xl mx-auto px-6">
       <div className="flex flex-col md:flex-row md:items-center items-start mb-12 gap-4 md:gap-0">
-        <h2 className="text-4xl font-bold text-[#D9A384] mr-8">SERVICES</h2>
-        <div className="text-xs text-blue-500 max-w-xs border-l-2 border-gray-200 pl-4 mt-2 md:mt-0">
+        <h2 className="text-5xl font-bold text-[#D9A384] mr-8">SERVICES</h2>
+        <div className="text-base text-[#6386A3] max-w-xs border-l-2 border-gray-200 pl-4 mt-2 md:mt-0">
           <p>Simple yet unique.</p>
           <p>This idea is key to helping our your succeed.</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:flex lg:flex-row gap-4 h-auto lg:h-[500px]">
+      {/* ── Mobile / Tablet: grid layout (ไม่เปลี่ยน) ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:hidden">
         {services.map((service, index) => {
           const desktopImgUrl = getImageUrl(service.image);
           const mobileImgUrl = service.imagemobile
@@ -82,28 +83,96 @@ export default function ServicesSection() {
           return (
             <div
               key={service.id ?? index}
-              className="relative group overflow-hidden rounded-lg transform-gpu transition-all duration-500 ease-in-out aspect-video lg:aspect-auto lg:h-full lg:flex-1 lg:hover:flex-[2] cursor-default lg:cursor-pointer"
+              className="relative overflow-hidden rounded-lg aspect-video"
             >
               <Image
                 src={mobileImgUrl}
                 alt={service.title || 'Service Image'}
                 fill
-                className="object-cover lg:hidden"
-              />
-              <Image
-                src={desktopImgUrl}
-                alt={service.title || 'Service Image'}
-                fill
-                className="object-cover hidden lg:block transition-transform duration-700 ease-out lg:group-hover:scale-110"
+                className="object-cover"
               />
               <div className="absolute top-0 inset-x-0 h-1/2 bg-gradient-to-b from-black/60 to-transparent" />
-              <div className="hidden lg:block absolute bottom-0 inset-x-0 h-2/3 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
               <div className="absolute top-0 left-0 right-0 p-6">
-                <h3 className="text-white font-bold text-lg lg:text-xl leading-tight uppercase w-full drop-shadow-md">
+                <h3 className="text-white font-bold text-lg leading-tight uppercase drop-shadow-md">
                   {service.title}
                 </h3>
               </div>
-              <div className="hidden lg:block absolute bottom-0 left-0 right-0 p-6 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 ease-out">
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Desktop: accordion flex layout ── */}
+      <div className="hidden lg:flex flex-row gap-4 h-[500px]">
+        {services.map((service, index) => {
+          const isActive = index === activeIndex;
+          const imgUrl = getImageUrl(service.image);
+
+          return (
+            <div
+              key={service.id ?? index}
+              onMouseEnter={() => setActiveIndex(index)}
+              className="relative overflow-hidden rounded-lg cursor-pointer transform-gpu"
+              style={{
+                flex: isActive ? '3 1 0%' : '1 1 0%',
+                transition: 'flex 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                minWidth: 0,
+              }}
+            >
+              {/* Image */}
+              <Image
+                src={imgUrl}
+                alt={service.title || 'Service Image'}
+                fill
+                className="object-cover"
+                style={{
+                  transform: isActive ? 'scale(1.05)' : 'scale(1)',
+                  transition: 'transform 0.7s ease-out',
+                }}
+              />
+
+              {/* Gradient overlays */}
+              <div className="absolute top-0 inset-x-0 h-1/2 bg-gradient-to-b from-black/60 to-transparent" />
+              <div
+                className="absolute bottom-0 inset-x-0 h-2/3 bg-gradient-to-t from-black/90 via-black/40 to-transparent"
+                style={{
+                  opacity: isActive ? 1 : 0,
+                  transition: 'opacity 0.4s ease',
+                }}
+              />
+
+              {/* Active highlight bar — เส้นสีเหลือมด้านล่าง */}
+              <div
+                className="absolute bottom-0 left-0 right-0 h-1 bg-[#D9A384]"
+                style={{
+                  transform: isActive ? 'scaleX(1)' : 'scaleX(0)',
+                  transition: 'transform 0.4s ease',
+                  transformOrigin: 'left',
+                }}
+              />
+
+              {/* Title — แสดงเสมอ */}
+              <div className="absolute top-0 left-0 right-0 p-6">
+                <h3
+                  className="text-white font-bold leading-tight uppercase drop-shadow-md whitespace-nowrap overflow-hidden text-ellipsis"
+                  style={{
+                    fontSize: isActive ? '1.25rem' : '1rem',
+                    transition: 'font-size 0.4s ease',
+                  }}
+                >
+                  {service.title}
+                </h3>
+              </div>
+
+              {/* Description — fade in เมื่อ active */}
+              <div
+                className="absolute bottom-0 left-0 right-0 p-6"
+                style={{
+                  opacity: isActive ? 1 : 0,
+                  transform: isActive ? 'translateY(0)' : 'translateY(12px)',
+                  transition: 'opacity 0.4s ease 0.1s, transform 0.4s ease 0.1s',
+                }}
+              >
                 <p className="text-white/90 text-base leading-relaxed">
                   {service.description}
                 </p>

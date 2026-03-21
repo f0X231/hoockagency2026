@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect } from "react";
 import { Suspense } from "react";
 import ServicesSection from "@/components/home/ServicesSection";
 import WorksSection from "@/components/home/WorksSection";
@@ -14,11 +17,35 @@ const SectionSkeleton = ({ color = "border-t-[#D9A384]", label }: { color?: stri
   </section>
 );
 
+// Poll for element then smooth-scroll to it (handles async-rendered sections)
+function scrollToId(id: string, maxWaitMs = 3000) {
+  const start = Date.now();
+  const tick = () => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    if (Date.now() - start < maxWaitMs) {
+      requestAnimationFrame(tick);
+    }
+  };
+  requestAnimationFrame(tick);
+}
+
 export default function Home() {
+  useEffect(() => {
+    const target = sessionStorage.getItem("scrollTo");
+    if (target) {
+      sessionStorage.removeItem("scrollTo");
+      scrollToId(target);
+    }
+  }, []);
+
   return (
     <main className="min-h-screen">
-      <BannerSection /> 
-      
+      <BannerSection />
+
       <Suspense fallback={<SectionSkeleton color="border-t-[#D9A384]" label="Loading Services..." />}>
         <ServicesSection />
       </Suspense>

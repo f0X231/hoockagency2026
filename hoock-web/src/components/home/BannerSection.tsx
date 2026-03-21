@@ -131,21 +131,17 @@ export default function BannerSection() {
           <div
             style={{
               display: 'inline-block',
-              backgroundColor: 'rgba(0, 0, 0, 0.4)',
-              borderRadius: '12px',
-              padding: '32px 40px',
               maxWidth: '560px',
               marginLeft: '2rem',
             }}
           >
             <h1
               style={{
-                color: '#ffffff',
-                fontSize: 'clamp(1.5rem, 3vw, 2.75rem)',
+                color: '#D9A384',
+                fontSize: 'clamp(2rem, 4vw, 3.2rem)',
                 fontWeight: 700,
                 lineHeight: 1.25,
                 marginBottom: '16px',
-                textShadow: '0 2px 8px rgba(0,0,0,0.3)',
               }}
             >
               {banner.title}
@@ -153,8 +149,8 @@ export default function BannerSection() {
             {banner.description && (
               <p
                 style={{
-                  color: 'rgba(255,255,255,0.85)',
-                  fontSize: 'clamp(0.875rem, 1.2vw, 1rem)',
+                  color: '#6386A3',
+                  fontSize: 'clamp(1.125rem, 2vw, 1.35rem)',
                   lineHeight: 1.7,
                   margin: 0,
                 }}

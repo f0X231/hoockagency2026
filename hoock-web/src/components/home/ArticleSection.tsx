@@ -130,7 +130,7 @@ export default function ArticleSection() {
   return (
     <section id="article" className="py-20 bg-[#54626F] text-white">
       <div className="max-w-7xl mx-auto px-6">
-        <h2 className="text-3xl font-bold mb-12">ARTICLE</h2>
+        <h2 className="text-5xl font-bold text-[#D9A384] mb-12">ARTICLE</h2>
 
         {error ? (
           <div className="text-center p-12 bg-white/5 rounded-lg border border-white/10">

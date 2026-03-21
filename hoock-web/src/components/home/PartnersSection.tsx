@@ -87,7 +87,7 @@ export default function PartnersSection() {
   return (
     <section className="py-20 bg-gray-50/50 overflow-hidden relative">
       <div className="max-w-7xl mx-auto px-6">
-        <h2 className="text-3xl font-bold text-[#1C2329] mb-12">OUR PARTNERS</h2>
+        <h2 className="text-5xl font-bold text-[#D9A384] mb-12">OUR PARTNERS</h2>
 
         <div className="relative flex overflow-x-hidden group">
           <div className="animate-marquee flex items-center gap-16 md:gap-24 whitespace-nowrap opacity-80 group-hover:opacity-100 transition-opacity duration-300">
