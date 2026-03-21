@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
-// ✅ ลบ import Script ออก — ไม่ใช้แล้ว
 import styles from "./contact.module.css";
 
 const socialLinks = [
@@ -33,95 +32,47 @@ export default function ContactPage() {
   const widgetIdRef = useRef<number | null>(null);
 
   const renderWidget = useCallback(() => {
-    // ✅ ตรวจครบทุกเงื่อนไขก่อน render
-    if (!SITE_KEY) {
-      console.error("❌ NEXT_PUBLIC_RECAPTCHA_SITE_KEY is missing");
-      return;
-    }
-    if (!window.grecaptcha?.render) {
-      console.warn("grecaptcha.render not ready yet");
-      return;
-    }
-    if (widgetIdRef.current !== null) return; // render แล้ว
+    if (!SITE_KEY) { console.error("❌ NEXT_PUBLIC_RECAPTCHA_SITE_KEY is missing"); return; }
+    if (!window.grecaptcha?.render) { console.warn("grecaptcha.render not ready yet"); return; }
+    if (widgetIdRef.current !== null) return;
     const container = document.getElementById("recaptcha-container");
-    if (!container) {
-      console.warn("recaptcha-container not found");
-      return;
-    }
-
+    if (!container) { console.warn("recaptcha-container not found"); return; }
     try {
       widgetIdRef.current = window.grecaptcha.render(container, {
         sitekey: SITE_KEY,
-        callback: (token: string) => {
-          captchaTokenRef.current = token;
-          setCaptchaReady(true);
-          setErrors((prev) => ({ ...prev, captcha: "" }));
-        },
-        "expired-callback": () => {
-          captchaTokenRef.current = null;
-          setCaptchaReady(false);
-        },
-        "error-callback": () => {
-          captchaTokenRef.current = null;
-          setCaptchaReady(false);
-        },
+        callback: (token: string) => { captchaTokenRef.current = token; setCaptchaReady(true); setErrors((prev) => ({ ...prev, captcha: "" })); },
+        "expired-callback": () => { captchaTokenRef.current = null; setCaptchaReady(false); },
+        "error-callback": () => { captchaTokenRef.current = null; setCaptchaReady(false); },
       });
-      console.log("✅ reCAPTCHA widget rendered, id:", widgetIdRef.current);
-    } catch (err) {
-      console.error("reCAPTCHA render error:", err);
-    }
+    } catch (err) { console.error("reCAPTCHA render error:", err); }
   }, []);
 
-  // ✅ โหลด script ด้วย useEffect — ควบคุม timing เองได้เลย
   useEffect(() => {
-    if (!SITE_KEY) {
-      console.error("❌ NEXT_PUBLIC_RECAPTCHA_SITE_KEY is not set in .env.local");
-      return;
-    }
-
-    // ถ้า script โหลดไปแล้ว (กรณี navigate กลับมาหน้านี้)
-    if (window.grecaptcha?.render) {
-      window.grecaptcha.ready(renderWidget);
-      return;
-    }
-
-    // ✅ inject script tag เอง
+    if (!SITE_KEY) { console.error("❌ NEXT_PUBLIC_RECAPTCHA_SITE_KEY is not set in .env.local"); return; }
+    if (window.grecaptcha?.render) { window.grecaptcha.ready(renderWidget); return; }
     const script = document.createElement("script");
     script.src = "https://www.google.com/recaptcha/api.js?render=explicit";
     script.async = true;
     script.defer = true;
-    script.onload = () => {
-      console.log("✅ reCAPTCHA script loaded");
-      window.grecaptcha.ready(renderWidget);
-    };
-    script.onerror = () => {
-      console.error("❌ Failed to load reCAPTCHA script — check network/adblocker");
-    };
+    script.onload = () => window.grecaptcha.ready(renderWidget);
+    script.onerror = () => console.error("❌ Failed to load reCAPTCHA script");
     document.head.appendChild(script);
-
-    return () => {
-      // cleanup: reset widget state เมื่อ unmount
-      widgetIdRef.current = null;
-    };
+    return () => { widgetIdRef.current = null; };
   }, [renderWidget]);
 
   const resetCaptcha = useCallback(() => {
     captchaTokenRef.current = null;
     setCaptchaReady(false);
-    if (widgetIdRef.current !== null && window.grecaptcha?.reset) {
-      window.grecaptcha.reset(widgetIdRef.current);
-    }
+    if (widgetIdRef.current !== null && window.grecaptcha?.reset) window.grecaptcha.reset(widgetIdRef.current);
   }, []);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!form.name.trim()) newErrors.name = "Name is required.";
     if (!form.email.trim()) newErrors.email = "Email is required.";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
-      newErrors.email = "Invalid email address.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = "Invalid email address.";
     if (!form.phone.trim()) newErrors.phone = "Phone is required.";
-    else if (!/^[0-9+\-\s()]{7,15}$/.test(form.phone))
-      newErrors.phone = "Invalid phone number.";
+    else if (!/^[0-9+\-\s()]{7,15}$/.test(form.phone)) newErrors.phone = "Invalid phone number.";
     if (!form.message.trim()) newErrors.message = "Message is required.";
     if (!privacy) newErrors.privacy = "You must accept the privacy policy.";
     if (!captchaTokenRef.current) newErrors.captcha = "Please complete the CAPTCHA.";
@@ -137,10 +88,7 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const validationErrors = validate();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
+    if (Object.keys(validationErrors).length > 0) { setErrors(validationErrors); return; }
     setStatus("loading");
     setErrorMsg("");
     try {
@@ -150,12 +98,7 @@ export default function ContactPage() {
         body: JSON.stringify({ ...form, captchaToken: captchaTokenRef.current }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        setStatus("error");
-        setErrorMsg(data.error || "บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
-        resetCaptcha();
-        return;
-      }
+      if (!res.ok) { setStatus("error"); setErrorMsg(data.error || "บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง"); resetCaptcha(); return; }
       setStatus("success");
       setForm({ name: "", email: "", phone: "", message: "" });
       setPrivacy(false);
@@ -168,7 +111,6 @@ export default function ContactPage() {
   };
 
   return (
-    // ✅ ไม่มี <Script> component แล้ว — script โหลดผ่าน useEffect แทน
     <div className={styles.container}>
       <div className={styles.content}>
         {/* Left Side */}
@@ -204,10 +146,7 @@ export default function ContactPage() {
               <p>ส่งข้อมูลเรียบร้อยแล้ว เราจะติดต่อกลับโดยเร็วที่สุด</p>
               <button
                 className={styles.submitButton}
-                onClick={() => {
-                  setStatus("idle");
-                  widgetIdRef.current = null; // ✅ reset เพื่อให้ render ใหม่ได้
-                }}
+                onClick={() => { setStatus("idle"); widgetIdRef.current = null; }}
               >
                 ส่งอีกครั้ง
               </button>
@@ -217,36 +156,31 @@ export default function ContactPage() {
               <div className={styles.formGroup}>
                 <input type="text" name="name" placeholder="Name *"
                   className={`${styles.input} ${errors.name ? styles.inputError : ""}`}
-                  value={form.name} onChange={handleChange}
-                />
+                  value={form.name} onChange={handleChange} />
                 {errors.name && <span className={styles.errorText}>{errors.name}</span>}
               </div>
 
               <div className={styles.formGroup}>
                 <input type="email" name="email" placeholder="Your mail *"
                   className={`${styles.input} ${errors.email ? styles.inputError : ""}`}
-                  value={form.email} onChange={handleChange}
-                />
+                  value={form.email} onChange={handleChange} />
                 {errors.email && <span className={styles.errorText}>{errors.email}</span>}
               </div>
 
               <div className={styles.formGroup}>
                 <input type="tel" name="phone" placeholder="Your Phone *"
                   className={`${styles.input} ${errors.phone ? styles.inputError : ""}`}
-                  value={form.phone} onChange={handleChange}
-                />
+                  value={form.phone} onChange={handleChange} />
                 {errors.phone && <span className={styles.errorText}>{errors.phone}</span>}
               </div>
 
               <div className={styles.formGroup}>
                 <textarea name="message" placeholder="Message *"
                   className={`${styles.textarea} ${errors.message ? styles.inputError : ""}`}
-                  value={form.message} onChange={handleChange}
-                />
+                  value={form.message} onChange={handleChange} />
                 {errors.message && <span className={styles.errorText}>{errors.message}</span>}
               </div>
 
-              {/* ✅ reCAPTCHA */}
               <div className={styles.formGroup}>
                 <div id="recaptcha-container" />
                 {!SITE_KEY && (
@@ -265,11 +199,7 @@ export default function ContactPage() {
               <div className={styles.checkboxGroup}>
                 <input type="checkbox" id="privacy" className={styles.checkbox}
                   checked={privacy}
-                  onChange={(e) => {
-                    setPrivacy(e.target.checked);
-                    if (errors.privacy) setErrors((prev) => ({ ...prev, privacy: "" }));
-                  }}
-                />
+                  onChange={(e) => { setPrivacy(e.target.checked); if (errors.privacy) setErrors((prev) => ({ ...prev, privacy: "" })); }} />
                 <label htmlFor="privacy" className={styles.checkboxLabel}>
                   You have read the{" "}
                   <Link href="/privacy-policy" className={styles.privacyLink}>privacy policy</Link>.

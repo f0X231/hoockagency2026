@@ -13,22 +13,30 @@ function createTimeoutSignal(ms: number): AbortSignal {
 async function postToStrapiWithRetry(
   payload: object,
   maxAttempts = 3
-): Promise<{ ok: boolean; status: number; body: any }> {
+): Promise<{ ok: boolean; status: number; body: any; errorText?: string }> {
   let lastError: any = null;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (process.env.STRAPI_API_TOKEN) {
+        headers['Authorization'] = `Bearer ${process.env.STRAPI_API_TOKEN}`;
+      }
+
       const res = await fetch(`${STRAPI_URL}/api/contact-submissions`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ data: payload }),
         signal: createTimeoutSignal(10000),
       });
 
-      const body = await res.json().catch(() => ({}));
+      const text = await res.text();
+      let body = {};
+      try { body = JSON.parse(text); } catch {}
+
       if (res.ok) return { ok: true, status: res.status, body };
-      if (res.status >= 400 && res.status < 500) return { ok: false, status: res.status, body };
-      lastError = { status: res.status, body };
+      if (res.status >= 400 && res.status < 500) return { ok: false, status: res.status, body, errorText: text };
+      lastError = { status: res.status, body, errorText: text };
     } catch (err) {
       lastError = err;
       console.error(`Strapi attempt ${attempt} failed:`, err);
@@ -100,7 +108,7 @@ export async function POST(req: NextRequest) {
   const result = await postToStrapiWithRetry({ name, email, phone, message }, 3);
 
   if (!result.ok) {
-    console.error('Strapi save failed:', result.body);
+    console.error('Strapi save failed:', result.status, result.body, result.errorText);
     return NextResponse.json(
       { error: 'บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง' },
       { status: 503 }

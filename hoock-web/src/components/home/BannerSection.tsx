@@ -137,7 +137,7 @@ export default function BannerSection() {
           >
             <h1
               style={{
-                color: '#D9A384',
+                color: '#000000',
                 fontSize: 'clamp(2rem, 4vw, 3.2rem)',
                 fontWeight: 700,
                 lineHeight: 1.25,
@@ -149,7 +149,7 @@ export default function BannerSection() {
             {banner.description && (
               <p
                 style={{
-                  color: '#6386A3',
+                  color: '#000000',
                   fontSize: 'clamp(1.125rem, 2vw, 1.35rem)',
                   lineHeight: 1.7,
                   margin: 0,
