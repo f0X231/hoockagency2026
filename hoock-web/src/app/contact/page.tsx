@@ -5,7 +5,7 @@ import Link from "next/link";
 import styles from "./contact.module.css";
 
 const socialLinks = [
-  { name: "Facebook", icon: "f", href: "#" },
+  { name: "Facebook", icon: "f", href: "https://www.facebook.com/share/18VkFSBvsu/?mibextid=wwXIfr" },
   { name: "Instagram", icon: "📷", href: "#" },
   { name: "X", icon: "𝕏", href: "#" },
   { name: "TikTok", icon: "♪", href: "#" },
@@ -80,8 +80,8 @@ export default function ContactPage() {
             </p>
           </div>
           <div className={styles.contactDetails}>
-            <p className={styles.contactItem}>Phone : 088-888-8888</p>
-            <p className={styles.contactItem}>Mail : Support@hoockagency.com</p>
+            <p className={styles.contactItem}>Phone : <a href="tel:0870036751">087-003-6751</a></p>
+            <p className={styles.contactItem}>Mail : <a href="mailto:supphagorn.s@hoockagency.com">supphagorn.s@hoockagency.com</a></p>
           </div>
           <div className={styles.socialLinks}>
             {socialLinks.map((social) => (

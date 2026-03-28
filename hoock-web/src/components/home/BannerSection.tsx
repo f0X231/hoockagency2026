@@ -115,8 +115,6 @@ export default function BannerSection() {
           priority
           sizes="100vw"
         />
-        {/* subtle dark overlay */}
-        <div className="absolute inset-0 bg-black/25" />
       </div>
 
       <div
@@ -135,22 +133,24 @@ export default function BannerSection() {
               marginLeft: '2rem',
             }}
           >
-            <h1
-              style={{
-                color: '#000000',
-                fontSize: 'clamp(2rem, 4vw, 3.2rem)',
-                fontWeight: 700,
-                lineHeight: 1.25,
-                marginBottom: '16px',
-              }}
-            >
-              {banner.title}
-            </h1>
+            {banner.title && (
+              <h1
+                style={{
+                  color: '#000000',
+                  fontSize: 'clamp(1.9rem, 3.9vw, 3.1rem)',
+                  fontWeight: 700,
+                  lineHeight: 1.25,
+                  marginBottom: '16px',
+                }}
+              >
+                {banner.title}
+              </h1>
+            )}
             {banner.description && (
               <p
                 style={{
                   color: '#000000',
-                  fontSize: 'clamp(1.125rem, 2vw, 1.35rem)',
+                  fontSize: 'clamp(1.1rem, 1.95vw, 1.32rem)',
                   lineHeight: 1.7,
                   margin: 0,
                 }}

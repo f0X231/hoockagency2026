@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 const NAV_LINKS = [
   { label: "Services", href: "/#services" },
@@ -15,20 +16,26 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const hamburgerRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
+    // Check initial scroll position
+    handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const forceSolid = pathname !== "/";
+  const isSolid = scrolled || forceSolid;
+
   // ── Color tokens ──────────────────────────────────────────────────────────
-  const textColor      = scrolled ? "rgba(0,0,0,0.85)"  : "rgba(255,255,255,0.85)";
-  const textHoverColor = scrolled ? "#000000"            : "#ffffff";
-  const iconColor      = scrolled ? "rgba(0,0,0,0.85)"  : "rgba(255,255,255,0.85)";
-  const barColor       = scrolled ? "#000000"            : "#ffffff";
+  const textColor      = isSolid ? "rgba(0,0,0,0.85)"  : "rgba(255,255,255,0.85)";
+  const textHoverColor = isSolid ? "#000000"            : "#ffffff";
+  const iconColor      = isSolid ? "rgba(0,0,0,0.85)"  : "rgba(255,255,255,0.85)";
+  const barColor       = isSolid ? "#000000"            : "#ffffff";
 
   return (
     <nav
@@ -40,10 +47,10 @@ export default function Navbar() {
         right: 0,
         transition:
           "background 0.4s ease, backdrop-filter 0.4s ease, box-shadow 0.4s ease",
-        background: scrolled ? "rgba(255,255,255,0.85)" : "transparent",
-        backdropFilter: scrolled ? "blur(16px) saturate(180%)" : "none",
-        WebkitBackdropFilter: scrolled ? "blur(16px) saturate(180%)" : "none",
-        boxShadow: scrolled
+        background: isSolid ? "rgba(255,255,255,0.85)" : "transparent",
+        backdropFilter: isSolid ? "blur(16px) saturate(180%)" : "none",
+        WebkitBackdropFilter: isSolid ? "blur(16px) saturate(180%)" : "none",
+        boxShadow: isSolid
           ? "0 1px 0 rgba(0,0,0,0.06), 0 4px 24px rgba(0,0,0,0.08)"
           : "none",
       }}
@@ -179,7 +186,7 @@ export default function Navbar() {
               className="object-contain"
               priority
               style={{
-                filter: scrolled ? "none" : "brightness(0) invert(1)",
+                filter: isSolid ? "none" : "brightness(0) invert(1)",
                 transition: "filter 0.3s ease",
               }}
             />
@@ -232,7 +239,7 @@ export default function Navbar() {
                 fontWeight: 700,
                 letterSpacing: "0.12em",
                 textTransform: "uppercase",
-                color: scrolled ? "#000000" : "white",
+                color: isSolid ? "#000000" : "white",
                 opacity: contactHovered ? 1 : 0,
                 transition: "opacity 0.25s ease, color 0.3s ease",
                 pointerEvents: "none",
