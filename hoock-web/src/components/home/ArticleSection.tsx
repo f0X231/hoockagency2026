@@ -128,9 +128,9 @@ export default function ArticleSection() {
   if (loading || (!error && articles.length === 0)) return null;
 
   return (
-    <section id="article" className="py-20 bg-[#54626F] text-white">
+    <section id="article" className="py-20 bg-[#25323D] text-white">
       <div className="max-w-7xl mx-auto px-6">
-        <h2 className="text-5xl font-bold text-[#D9A384] mb-12">ARTICLE</h2>
+        <h2 className="text-4xl md:text-5xl font-extrabold text-[#CBA68B] mb-12 font-heading tracking-wider">ARTICLE</h2>
 
         {error ? (
           <div className="text-center p-12 bg-white/5 rounded-lg border border-white/10">
@@ -166,10 +166,10 @@ export default function ArticleSection() {
                     <span className="text-xs text-gray-300 mb-2 tracking-wide font-medium">
                       {formatDate(article.publishedAt ?? article.updatedAt)}
                     </span>
-                    <h3 className="text-xl md:text-2xl font-bold leading-snug mb-4 text-white group-hover:text-[#D9A384] transition-colors line-clamp-2">
+                    <h3 className="text-xl md:text-2xl font-bold leading-snug mb-4 text-white group-hover:text-[#CBA68B] transition-colors line-clamp-2">
                       {article.title}
                     </h3>
-                    <span className="mt-auto text-xs text-[#D9A384] font-medium uppercase tracking-wider flex items-center gap-1 group-hover:translate-x-1 transition-transform w-[max-content]">
+                    <span className="mt-auto text-xs text-[#CBA68B] font-medium uppercase tracking-wider flex items-center gap-1 group-hover:translate-x-1 transition-transform w-[max-content]">
                       View More
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
                         <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" />
@@ -187,7 +187,7 @@ export default function ArticleSection() {
             <button
               onClick={handleLoadMore}
               disabled={loadingMore}
-              className="px-8 py-3 bg-transparent border-2 border-white/50 text-white rounded hover:bg-white hover:text-[#54626F] transition-all font-semibold uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-8 py-3 bg-transparent border-2 border-white/50 text-white rounded hover:bg-white hover:text-[#25323D] transition-all font-semibold uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {loadingMore ? (
                 <>

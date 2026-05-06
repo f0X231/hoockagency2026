@@ -65,7 +65,7 @@ export default function ServicesSection() {
   return (
     <section id="services" className="py-20 max-w-7xl mx-auto px-6">
       <div className="flex flex-col md:flex-row md:items-center items-start mb-12 gap-4 md:gap-0">
-        <h2 className="text-5xl font-bold text-[#D9A384] mr-8">SERVICES</h2>
+        <h2 className="text-4xl md:text-5xl font-extrabold text-[#CBA68B] mr-8 font-heading tracking-wider">SERVICES</h2>
         <div className="text-base text-[#6386A3] max-w-xs border-l-2 border-gray-200 pl-4 mt-2 md:mt-0">
           <p>Simple yet unique.</p>
           <p>This idea is key to helping our your succeed.</p>
@@ -143,7 +143,7 @@ export default function ServicesSection() {
 
               {/* Active highlight bar — เส้นสีเหลือมด้านล่าง */}
               <div
-                className="absolute bottom-0 left-0 right-0 h-1 bg-[#D9A384]"
+                className="absolute bottom-0 left-0 right-0 h-1 bg-[#CBA68B]"
                 style={{
                   transform: isActive ? 'scaleX(1)' : 'scaleX(0)',
                   transition: 'transform 0.4s ease',

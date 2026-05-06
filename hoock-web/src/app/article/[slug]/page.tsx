@@ -137,14 +137,14 @@ export default async function ArticlePage({
 
   if (!article) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center p-8 bg-gray-50 text-[#1C2329] pt-32">
+      <div className="min-h-[70vh] flex flex-col items-center justify-center p-8 bg-gray-50 text-[#25323D] pt-32">
         <h1 className="text-4xl font-bold mb-4">Article Not Found</h1>
         <p className="text-gray-500 mb-8">
           The article you are looking for does not exist or has been removed.
         </p>
         <Link
           href="/#article"
-          className="px-6 py-3 bg-[#1C2329] text-white font-semibold rounded hover:bg-[#D9A384] transition-colors"
+          className="px-6 py-3 bg-[#25323D] text-white font-semibold rounded hover:bg-[#CBA68B] transition-colors"
         >
           Return to Articles
         </Link>
@@ -163,12 +163,12 @@ export default async function ArticlePage({
         <BackToArticles />
 
         {/* Title */}
-        <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-[#1C2329] leading-tight mb-4">
+        <h1 className="text-[36px] font-semibold text-[#25323D] leading-tight mb-4 font-heading">
           {article.title}
         </h1>
 
         {/* Published Date */}
-        <div className="text-gray-500 text-sm md:text-base mb-10">
+        <div className="text-[#915436] text-[20px] leading-[34px] font-normal mb-10">
           Published on {formatDate(article.publishedAt || article.updatedAt)}
         </div>
 
