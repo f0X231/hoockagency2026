@@ -15,7 +15,17 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const hamburgerRef = useRef<HTMLDivElement>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pathname = usePathname();
+
+  const handleMenuEnter = () => {
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    setMobileOpen(true);
+  };
+
+  const handleMenuLeave = () => {
+    closeTimerRef.current = setTimeout(() => setMobileOpen(false), 400);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -89,8 +99,8 @@ export default function Navbar() {
           <div
             ref={hamburgerRef}
             className="md:hidden relative"
-            onMouseEnter={() => setMobileOpen(true)}
-            onMouseLeave={() => setMobileOpen(false)}
+            onMouseEnter={handleMenuEnter}
+            onMouseLeave={handleMenuLeave}
           >
             <button
               aria-label="Menu"

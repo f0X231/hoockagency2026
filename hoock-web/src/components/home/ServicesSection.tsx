@@ -103,10 +103,12 @@ export default function ServicesSection() {
       </div>
 
       {/* ── Desktop: accordion flex layout ── */}
-      <div className="hidden lg:flex flex-row gap-4 h-[500px]">
+      <div className="hidden lg:flex flex-row gap-4 h-[300px]">
         {services.map((service, index) => {
           const isActive = index === activeIndex;
-          const imgUrl = getImageUrl(service.image);
+          const imgUrl = service.imagefull
+            ? getImageUrl(service.imagefull)
+            : getImageUrl(service.image);
 
           return (
             <div
