@@ -65,8 +65,8 @@ export default function ServicesSection() {
   return (
     <section id="services" className="py-20 max-w-7xl mx-auto px-6">
       <div className="flex flex-col md:flex-row md:items-center items-start mb-12 gap-4 md:gap-0">
-        <h2 className="text-4xl md:text-5xl font-extrabold text-[#CBA68B] mr-8 font-heading tracking-wider">SERVICES</h2>
-        <div className="text-base text-[#6386A3] max-w-xs border-l-2 border-gray-200 pl-4 mt-2 md:mt-0">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-[#CBA68B] mr-8 font-heading tracking-wider">SERVICES</h2>
+        <div className="text-sm md:text-base text-[#6386A3] max-w-xs border-l-2 border-gray-200 pl-4 mt-2 md:mt-0">
           <p>Simple yet unique.</p>
           <p>This idea is key to helping our your succeed.</p>
         </div>

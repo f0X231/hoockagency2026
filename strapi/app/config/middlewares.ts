@@ -22,6 +22,8 @@ export default [
       origin: [
         'http://localhost:3000',
         'https://hoock-agency.supphagorn-s.workers.dev',
+        'https://hoockagency.com',
+        'https://www.hoockagency.com',
       ],
     },
   },

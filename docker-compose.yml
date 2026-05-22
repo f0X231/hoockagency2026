@@ -45,6 +45,5 @@ services:
 
 volumes:
     hoock_db_data:
-        external: true
         name: hoock-dev_hoock_db_data
     strapi_node_modules:

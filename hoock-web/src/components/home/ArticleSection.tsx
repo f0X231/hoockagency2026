@@ -130,7 +130,7 @@ export default function ArticleSection() {
   return (
     <section id="article" className="py-20 bg-[#25323D] text-white">
       <div className="max-w-7xl mx-auto px-6">
-        <h2 className="text-4xl md:text-5xl font-extrabold text-[#CBA68B] mb-12 font-heading tracking-wider">ARTICLE</h2>
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-[#CBA68B] mb-12 font-heading tracking-wider">ARTICLE</h2>
 
         {error ? (
           <div className="text-center p-12 bg-white/5 rounded-lg border border-white/10">
@@ -166,7 +166,7 @@ export default function ArticleSection() {
                     <span className="text-xs text-gray-300 mb-2 tracking-wide font-medium">
                       {formatDate(article.publishedAt ?? article.updatedAt)}
                     </span>
-                    <h3 className="text-xl md:text-2xl font-bold leading-snug mb-4 text-white group-hover:text-[#CBA68B] transition-colors line-clamp-2">
+                    <h3 className="text-lg md:text-xl lg:text-2xl font-bold leading-snug mb-4 text-white group-hover:text-[#CBA68B] transition-colors line-clamp-2">
                       {article.title}
                     </h3>
                     <span className="mt-auto text-xs text-[#CBA68B] font-medium uppercase tracking-wider flex items-center gap-1 group-hover:translate-x-1 transition-transform w-[max-content]">

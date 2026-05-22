@@ -8,7 +8,16 @@ main = ".open-next/worker.js"
 directory = ".open-next/assets"
 binding = "ASSETS"
 
+[[routes]]
+pattern = "hoockagency.com"
+custom_domain = true
+
+[[routes]]
+pattern = "www.hoockagency.com"
+custom_domain = true
+
 [vars]
 URI_STRAPI = "https://strong-art-a39006d263.strapiapp.com"
 NEXT_PUBLIC_URI_STRAPI = "https://strong-art-a39006d263.strapiapp.com"
-NEXT_PUBLIC_SITE_URL = "https://hoock-agency.supphagorn-s.workers.dev"
+NEXT_PUBLIC_SITE_URL = "https://hoockagency.com"
+NEXT_PUBLIC_RECAPTCHA_SITE_KEY = "6Lf3A4YsAAAAABJ4_7gKlQCBZdnd_E0LuCJh0PsY"

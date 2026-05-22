@@ -1,3 +1,13 @@
 app/node_modules
+app/.tmp
+app/build
+app/dist
+app/.cache
+app/.strapi
+app/.strapi-updater.json
+app/.strapi-cloud.json
+app/exports
+app/export_data.tar.gz
+app/transfer_*.log
 .git
 .env

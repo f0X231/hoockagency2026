@@ -12,7 +12,6 @@ const NAV_LINKS = [
 ];
 
 export default function Navbar() {
-  const [contactHovered, setContactHovered] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const hamburgerRef = useRef<HTMLDivElement>(null);
@@ -197,8 +196,6 @@ export default function Navbar() {
         <Link
           href="/contact"
           aria-label="Contact"
-          onMouseEnter={() => setContactHovered(true)}
-          onMouseLeave={() => setContactHovered(false)}
           style={{
             display: "flex",
             alignItems: "center",
@@ -240,7 +237,7 @@ export default function Navbar() {
                 letterSpacing: "0.12em",
                 textTransform: "uppercase",
                 color: isSolid ? "#000000" : "white",
-                opacity: contactHovered ? 1 : 0,
+                opacity: 1,
                 transition: "opacity 0.25s ease, color 0.3s ease",
                 pointerEvents: "none",
                 userSelect: "none",

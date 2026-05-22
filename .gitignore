@@ -55,13 +55,16 @@ pnpm-debug.log*
 nbproject/
 
 # =============================
-# Next.js (hoock-web)
+# Next.js / Cloudflare (hoock-web)
 # =============================
 hoock-web/.next/
 hoock-web/out/
 hoock-web/build/
 hoock-web/.vercel/
 hoock-web/.turbo/
+hoock-web/.open-next/
+hoock-web/.wrangler/
+hoock-web/next-env.d.ts
 
 # =============================
 # Strapi
