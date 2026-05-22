@@ -114,7 +114,7 @@ export default function ServicesSection() {
               onMouseEnter={() => setActiveIndex(index)}
               className="relative overflow-hidden rounded-lg cursor-pointer transform-gpu"
               style={{
-                flex: isActive ? '3 1 0%' : '1 1 0%',
+                flex: isActive ? '5 1 0%' : '1 1 0%',
                 transition: 'flex 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
                 minWidth: 0,
               }}
