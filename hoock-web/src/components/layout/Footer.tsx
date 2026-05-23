@@ -66,14 +66,16 @@ export default function Footer() {
         {/* ── LEFT: Logo + Company Info ── */}
         <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
           {/* Logo */}
-          <Image
-            src="/logo-hoock.png"
-            alt="Hoock Agency Logo"
-            width={180}
-            height={60}
-            className="object-contain"
-            style={{ filter: "brightness(0) invert(1)" }}
-          />
+          <Link href="https://www.hoockagency.com/" aria-label="Hoock Agency">
+            <Image
+              src="/logo-hoock.png"
+              alt="Hoock Agency Logo"
+              width={180}
+              height={60}
+              className="object-contain"
+              style={{ filter: "brightness(0) invert(1)" }}
+            />
+          </Link>
 
           {/* Company Info */}
           <div style={{ marginTop: "1.75rem" }}>
