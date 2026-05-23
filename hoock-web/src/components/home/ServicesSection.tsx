@@ -73,7 +73,7 @@ export default function ServicesSection() {
       </div>
 
       {/* ── Mobile only: portrait layout with imagemobile ── */}
-      <div className="grid grid-cols-2 gap-3 md:hidden">
+      <div className="grid grid-cols-1 gap-3 md:hidden">
         {services.map((service, index) => {
           const mobileImgUrl = service.imagemobile
             ? getImageUrl(service.imagemobile)
