@@ -100,15 +100,23 @@ export async function generateMetadata({
     article.content?.slice(0, 160) ||
     '';
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hoockagency.com';
+
   return {
     title: article.title,
     description,
+    alternates: {
+      canonical: `${siteUrl}/article/${slug}`,
+    },
     openGraph: {
       title: article.title,
       description,
       type: 'article',
       publishedTime: article.publishedAt,
       modifiedTime: article.updatedAt,
+      url: `${siteUrl}/article/${slug}`,
+      siteName: 'HOOCK Agency',
+      locale: 'th_TH',
       images: [
         {
           url: mainImage,
@@ -152,12 +160,50 @@ export default async function ArticlePage({
     );
   }
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hoockagency.com';
   const mainImage = getImageUrl(article.cover ?? article.image ?? article.thumbnail);
   const mainContent =
     article.detail || article.content || article.description || 'No content provided for this article.';
+  const description =
+    article.description ||
+    article.detail?.slice(0, 160) ||
+    article.content?.slice(0, 160) ||
+    '';
+
+  const articleJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: article.title,
+    description,
+    image: mainImage,
+    datePublished: article.publishedAt,
+    dateModified: article.updatedAt,
+    url: `${siteUrl}/article/${slug}`,
+    author: {
+      '@type': 'Organization',
+      name: 'HOOCK Agency',
+      url: siteUrl,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'HOOCK Agency',
+      logo: {
+        '@type': 'ImageObject',
+        url: `${siteUrl}/logo-hoock.png`,
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `${siteUrl}/article/${slug}`,
+    },
+  };
 
   return (
     <article className="min-h-screen bg-white pb-24 pt-32">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
       <div className="max-w-7xl mx-auto px-6">
 
         <BackToArticles />
