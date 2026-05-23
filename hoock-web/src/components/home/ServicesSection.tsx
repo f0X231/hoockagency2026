@@ -72,13 +72,39 @@ export default function ServicesSection() {
         </div>
       </div>
 
-      {/* ── Mobile / Tablet: grid layout (ไม่เปลี่ยน) ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:hidden">
+      {/* ── Mobile only: portrait layout with imagemobile ── */}
+      <div className="grid grid-cols-2 gap-3 md:hidden">
         {services.map((service, index) => {
-          const desktopImgUrl = getImageUrl(service.image);
           const mobileImgUrl = service.imagemobile
             ? getImageUrl(service.imagemobile)
-            : desktopImgUrl;
+            : getImageUrl(service.image);
+
+          return (
+            <div
+              key={service.id ?? index}
+              className="relative overflow-hidden rounded-lg aspect-[9/16]"
+            >
+              <Image
+                src={mobileImgUrl}
+                alt={service.title || 'Service Image'}
+                fill
+                className="object-cover"
+              />
+              <div className="absolute top-0 inset-x-0 h-1/2 bg-gradient-to-b from-black/60 to-transparent" />
+              <div className="absolute top-0 left-0 right-0 p-3">
+                <h3 className="text-white font-bold text-sm leading-tight uppercase drop-shadow-md">
+                  {service.title}
+                </h3>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Tablet: landscape grid layout with image (unchanged style) ── */}
+      <div className="hidden md:grid grid-cols-2 gap-4 lg:hidden">
+        {services.map((service, index) => {
+          const imgUrl = getImageUrl(service.image);
 
           return (
             <div
@@ -86,7 +112,7 @@ export default function ServicesSection() {
               className="relative overflow-hidden rounded-lg aspect-video"
             >
               <Image
-                src={mobileImgUrl}
+                src={imgUrl}
                 alt={service.title || 'Service Image'}
                 fill
                 className="object-cover"

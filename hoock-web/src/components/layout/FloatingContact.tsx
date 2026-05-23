@@ -21,7 +21,7 @@ export default function FloatingContact() {
 
       {/* LINE */}
       <a
-        href="https://lin.ee/vgfQxJQt"
+        href="https://line.me/R/ti/p/@697szhbq"
         target="_blank"
         rel="noopener noreferrer"
         className="flex h-[45px] w-[45px] items-center justify-center rounded-full bg-[#06C755] shadow-md transition-transform hover:scale-110"
