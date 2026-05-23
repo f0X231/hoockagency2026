@@ -82,7 +82,7 @@ export default function ServicesSection() {
           return (
             <div
               key={service.id ?? index}
-              className="relative overflow-hidden rounded-lg aspect-[9/16]"
+              className="relative overflow-hidden rounded-lg aspect-[32/9]"
             >
               <Image
                 src={mobileImgUrl}
